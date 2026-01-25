@@ -18,7 +18,7 @@ import Link from 'next/link';
 import { TEAM_JORGE_ID, SSS_TOURNAMENT_ID } from '@/lib/constants';
 import type { Match, Round, MatchStatus, MatchResult } from '@/types/database';
 
-const SCORE_OPTIONS = [
+const MATCHPLAY_SCORE_OPTIONS = [
   'AS', '1UP', '2UP', '3UP', '4UP', '5UP', '6UP', '7UP', '8UP', '9UP', '10UP',
   '1&0', '2&1', '3&2', '4&3', '5&4', '6&5', '7&6', '8&7', '9&8', '10&8'
 ];
@@ -27,6 +27,12 @@ const QUICK_SCORE_BUTTONS = [
   { label: '-1', value: '1DOWN', color: 'bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-lg shadow-red-500/30', action: 'decrease', icon: '◀' },
   { label: 'AS', value: 'AS', color: 'bg-gradient-to-br from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700 shadow-lg shadow-slate-500/30', action: 'all_square', icon: '●' },
   { label: '+1', value: '1UP', color: 'bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg shadow-green-500/30', action: 'increase', icon: '▶' },
+];
+
+// For stroke play quick buttons
+const STROKE_BUTTONS = [
+  { label: '-1', color: 'bg-red-500 hover:bg-red-600', delta: -1 },
+  { label: '+1', color: 'bg-green-500 hover:bg-green-600', delta: 1 },
 ];
 
 export default function MatchPage({ params }: { params: Promise<{ matchId: string }> }) {
@@ -43,6 +49,8 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
     score_display: 'AS',
     holes_played: 0,
     result: 'in_progress' as MatchResult,
+    team_a_strokes: 0,
+    team_b_strokes: 0,
   });
 
   const supabase = getSupabaseClient();
@@ -63,6 +71,8 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
           score_display: m.score_display,
           holes_played: m.holes_played,
           result: m.result,
+          team_a_strokes: m.team_a_strokes || 0,
+          team_b_strokes: m.team_b_strokes || 0,
         });
 
         const { data: roundData } = await supabase
@@ -118,14 +128,35 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
     setIsSaving(false);
   };
 
+  // Check if this is stroke play (singles format)
+  const isStrokePlay = round?.format === 'singles';
+
   const handleSaveScore = async () => {
     setIsSaving(true);
 
     // Calculate points based on result
     let team_a_points = 0;
     let team_b_points = 0;
+    let finalResult = formData.result;
+    let scoreDisplay = formData.score_display;
     
-    if (formData.status === 'completed') {
+    // For stroke play, calculate result from strokes
+    if (isStrokePlay && formData.status === 'completed') {
+      scoreDisplay = `${formData.team_a_strokes} - ${formData.team_b_strokes}`;
+      
+      if (formData.team_a_strokes < formData.team_b_strokes) {
+        finalResult = 'team_a_win';
+        team_a_points = match?.points_value || 1;
+      } else if (formData.team_b_strokes < formData.team_a_strokes) {
+        finalResult = 'team_b_win';
+        team_b_points = match?.points_value || 1;
+      } else {
+        finalResult = 'draw';
+        team_a_points = (match?.points_value || 1) / 2;
+        team_b_points = (match?.points_value || 1) / 2;
+      }
+    } else if (formData.status === 'completed') {
+      // Matchplay scoring
       if (formData.result === 'team_a_win') {
         team_a_points = match?.points_value || 1;
       } else if (formData.result === 'team_b_win') {
@@ -136,15 +167,22 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
       }
     }
 
+    // For stroke play in progress, show current strokes
+    if (isStrokePlay && formData.status === 'in_progress') {
+      scoreDisplay = `${formData.team_a_strokes} - ${formData.team_b_strokes}`;
+    }
+
     const { error } = await supabase
       .from('matches')
       .update({
         status: formData.status,
-        score_display: formData.score_display,
+        score_display: scoreDisplay,
         holes_played: formData.holes_played,
-        result: formData.result,
+        result: finalResult,
         team_a_points,
         team_b_points,
+        team_a_strokes: formData.team_a_strokes,
+        team_b_strokes: formData.team_b_strokes,
       } as Record<string, unknown>)
       .eq('id', matchId);
 
@@ -156,10 +194,12 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
         match_id: matchId,
         updated_by: player?.id,
         payload: {
-          score_display: formData.score_display,
+          score_display: scoreDisplay,
           holes_played: formData.holes_played,
           status: formData.status,
-          result: formData.result,
+          result: finalResult,
+          team_a_strokes: formData.team_a_strokes,
+          team_b_strokes: formData.team_b_strokes,
         },
       } as Record<string, unknown>);
 
@@ -170,14 +210,19 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
         actor_user_id: player?.id,
         payload: { 
           match_id: matchId, 
-          score: formData.score_display,
+          score: scoreDisplay,
           description: round?.name,
         },
       } as Record<string, unknown>);
 
       setMatch(prev => prev ? { 
         ...prev, 
-        ...formData,
+        status: formData.status,
+        score_display: scoreDisplay,
+        holes_played: formData.holes_played,
+        result: finalResult,
+        team_a_strokes: formData.team_a_strokes,
+        team_b_strokes: formData.team_b_strokes,
         team_a_points,
         team_b_points,
       } : null);
@@ -336,63 +381,159 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
 
             {match.status !== 'pending' && (
               <>
-                {/* Quick Score Buttons - SUPER GRANDE */}
-                <div className="space-y-4">
-                  <label className="text-base font-bold block text-center" style={{ fontFamily: 'var(--font-display)' }}>
-                    ⚡ Marcador Rápido
-                  </label>
-                  <div className="grid grid-cols-3 gap-4">
-                    {QUICK_SCORE_BUTTONS.map((btn) => (
-                      <Button
-                        key={btn.value}
-                        onClick={() => {
-                          if (btn.action === 'decrease') {
-                            const currentIndex = SCORE_OPTIONS.indexOf(formData.score_display);
-                            if (currentIndex > 0) {
-                              setFormData(prev => ({ ...prev, score_display: SCORE_OPTIONS[currentIndex - 1] }));
-                            }
-                          } else if (btn.action === 'all_square') {
-                            setFormData(prev => ({ ...prev, score_display: 'AS' }));
-                          } else if (btn.action === 'increase') {
-                            const currentIndex = SCORE_OPTIONS.indexOf(formData.score_display);
-                            if (currentIndex < SCORE_OPTIONS.length - 1) {
-                              setFormData(prev => ({ ...prev, score_display: SCORE_OPTIONS[currentIndex + 1] }));
-                            }
-                          }
-                        }}
-                        className={`h-24 min-h-[96px] text-3xl font-black text-white transition-all duration-200 active:scale-90 rounded-2xl ${btn.color}`}
-                        style={{ fontFamily: 'var(--font-display)' }}
-                      >
-                        <div className="flex flex-col items-center gap-1">
-                          <span className="text-4xl">{btn.label}</span>
+                {/* STROKE PLAY UI (Singles) */}
+                {isStrokePlay ? (
+                  <div className="space-y-6">
+                    <div className="text-center">
+                      <Badge variant="outline" className="mb-4">
+                        Stroke Play - Golpes Totales
+                      </Badge>
+                    </div>
+                    
+                    {/* Team A Strokes */}
+                    <div className="space-y-3">
+                      <label className="text-sm font-bold block" style={{ color: teamA?.id === TEAM_JORGE_ID ? '#DC2626' : '#2563EB' }}>
+                        {teamAPlayers.join(' & ')}
+                      </label>
+                      <div className="flex items-center gap-4">
+                        <Button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, team_a_strokes: Math.max(0, prev.team_a_strokes - 1) }))}
+                          className="h-16 w-16 text-2xl font-bold bg-red-500 hover:bg-red-600 text-white rounded-xl"
+                        >
+                          -
+                        </Button>
+                        <div className="flex-1 text-center">
+                          <span 
+                            className="text-6xl font-black"
+                            style={{ fontFamily: 'var(--font-display)', color: teamA?.id === TEAM_JORGE_ID ? '#DC2626' : '#2563EB' }}
+                          >
+                            {formData.team_a_strokes}
+                          </span>
+                          <p className="text-sm text-muted-foreground">golpes</p>
                         </div>
-                      </Button>
-                    ))}
-                  </div>
-                  <p className="text-xs text-center text-muted-foreground">
-                    Toca para ajustar el marcador
-                  </p>
-                </div>
+                        <Button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, team_a_strokes: prev.team_a_strokes + 1 }))}
+                          className="h-16 w-16 text-2xl font-bold bg-green-500 hover:bg-green-600 text-white rounded-xl"
+                        >
+                          +
+                        </Button>
+                      </div>
+                    </div>
 
-                {/* Score Display - Full Selector */}
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold">Marcador Completo</label>
-                  <Select
-                    value={formData.score_display}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, score_display: value }))}
-                  >
-                    <SelectTrigger className="h-14 text-base">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SCORE_OPTIONS.map((score) => (
-                        <SelectItem key={score} value={score} className="text-base py-3">
-                          {score}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                    {/* VS Divider */}
+                    <div className="text-center text-muted-foreground text-sm font-bold">VS</div>
+
+                    {/* Team B Strokes */}
+                    <div className="space-y-3">
+                      <label className="text-sm font-bold block" style={{ color: teamB?.id === TEAM_JORGE_ID ? '#DC2626' : '#2563EB' }}>
+                        {teamBPlayers.join(' & ')}
+                      </label>
+                      <div className="flex items-center gap-4">
+                        <Button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, team_b_strokes: Math.max(0, prev.team_b_strokes - 1) }))}
+                          className="h-16 w-16 text-2xl font-bold bg-red-500 hover:bg-red-600 text-white rounded-xl"
+                        >
+                          -
+                        </Button>
+                        <div className="flex-1 text-center">
+                          <span 
+                            className="text-6xl font-black"
+                            style={{ fontFamily: 'var(--font-display)', color: teamB?.id === TEAM_JORGE_ID ? '#DC2626' : '#2563EB' }}
+                          >
+                            {formData.team_b_strokes}
+                          </span>
+                          <p className="text-sm text-muted-foreground">golpes</p>
+                        </div>
+                        <Button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, team_b_strokes: prev.team_b_strokes + 1 }))}
+                          className="h-16 w-16 text-2xl font-bold bg-green-500 hover:bg-green-600 text-white rounded-xl"
+                        >
+                          +
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Difference indicator */}
+                    {formData.team_a_strokes > 0 || formData.team_b_strokes > 0 ? (
+                      <div className="text-center p-4 bg-muted/50 rounded-xl">
+                        <p className="text-sm text-muted-foreground">Diferencia</p>
+                        <p className="text-2xl font-black" style={{ fontFamily: 'var(--font-display)' }}>
+                          {formData.team_a_strokes === formData.team_b_strokes 
+                            ? 'EMPATE'
+                            : formData.team_a_strokes < formData.team_b_strokes
+                              ? `${teamAPlayers[0]} gana por ${formData.team_b_strokes - formData.team_a_strokes}`
+                              : `${teamBPlayers[0]} gana por ${formData.team_a_strokes - formData.team_b_strokes}`
+                          }
+                        </p>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : (
+                  /* MATCHPLAY UI (Scramble) */
+                  <>
+                    {/* Quick Score Buttons - SUPER GRANDE */}
+                    <div className="space-y-4">
+                      <label className="text-base font-bold block text-center" style={{ fontFamily: 'var(--font-display)' }}>
+                        Marcador Rápido
+                      </label>
+                      <div className="grid grid-cols-3 gap-4">
+                        {QUICK_SCORE_BUTTONS.map((btn) => (
+                          <Button
+                            key={btn.value}
+                            onClick={() => {
+                              if (btn.action === 'decrease') {
+                                const currentIndex = MATCHPLAY_SCORE_OPTIONS.indexOf(formData.score_display);
+                                if (currentIndex > 0) {
+                                  setFormData(prev => ({ ...prev, score_display: MATCHPLAY_SCORE_OPTIONS[currentIndex - 1] }));
+                                }
+                              } else if (btn.action === 'all_square') {
+                                setFormData(prev => ({ ...prev, score_display: 'AS' }));
+                              } else if (btn.action === 'increase') {
+                                const currentIndex = MATCHPLAY_SCORE_OPTIONS.indexOf(formData.score_display);
+                                if (currentIndex < MATCHPLAY_SCORE_OPTIONS.length - 1) {
+                                  setFormData(prev => ({ ...prev, score_display: MATCHPLAY_SCORE_OPTIONS[currentIndex + 1] }));
+                                }
+                              }
+                            }}
+                            className={`h-24 min-h-[96px] text-3xl font-black text-white transition-all duration-200 active:scale-90 rounded-2xl ${btn.color}`}
+                            style={{ fontFamily: 'var(--font-display)' }}
+                          >
+                            <div className="flex flex-col items-center gap-1">
+                              <span className="text-4xl">{btn.label}</span>
+                            </div>
+                          </Button>
+                        ))}
+                      </div>
+                      <p className="text-xs text-center text-muted-foreground">
+                        Toca para ajustar el marcador
+                      </p>
+                    </div>
+
+                    {/* Score Display - Full Selector */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold">Marcador Completo</label>
+                      <Select
+                        value={formData.score_display}
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, score_display: value }))}
+                      >
+                        <SelectTrigger className="h-14 text-base">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {MATCHPLAY_SCORE_OPTIONS.map((score) => (
+                            <SelectItem key={score} value={score} className="text-base py-3">
+                              {score}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
+                )}
 
                 {/* Holes Played */}
                 <div className="space-y-2">

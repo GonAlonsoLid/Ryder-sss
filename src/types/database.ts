@@ -73,6 +73,8 @@ export interface Match {
   points_value: number;
   team_a_points: number;
   team_b_points: number;
+  team_a_strokes: number;  // For stroke play (singles)
+  team_b_strokes: number;  // For stroke play (singles)
   created_at: string;
   updated_at: string;
 }
