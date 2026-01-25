@@ -83,7 +83,7 @@ export default function LandingPage() {
           <div className="absolute inset-0 bg-amber-400/40 rounded-3xl blur-2xl animate-pulse" />
           <div className="relative w-28 h-28 rounded-3xl bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center shadow-2xl shadow-slate-400/30 overflow-hidden ring-4 ring-amber-400/30">
             <img 
-              src="/icons/icon.png" 
+              src="/icons/icon.png?v=2" 
               alt="SSS Ryder Cup" 
               className="w-full h-full object-cover"
             />

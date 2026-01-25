@@ -178,7 +178,7 @@ export default function TournamentPage() {
             <CardContent className="py-8">
               <div className="text-center">
                 <div className="flex items-center justify-center gap-3 mb-4">
-                  <Image src="/icons/icon.png" alt="SSS" width={40} height={40} />
+                  <Image src="/icons/icon.png?v=2" alt="SSS" width={40} height={40} unoptimized />
                   <div>
                     <h2 className="text-xl font-bold" style={{ fontFamily: 'var(--font-display)' }}>
                       SSS Ryder Weekend

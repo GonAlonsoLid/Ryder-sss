@@ -101,7 +101,7 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-slate-900 shadow-elevation-lg mb-4 overflow-hidden">
             <img 
-              src="/icons/icon.png" 
+              src="/icons/icon.png?v=2" 
               alt="SSS Ryder Cup" 
               className="w-full h-full object-cover"
             />

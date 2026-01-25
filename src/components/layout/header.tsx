@@ -24,11 +24,12 @@ export function Header({ title = 'SSS Ryder', showProfile = true }: HeaderProps)
         <Link href="/dashboard" className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg overflow-hidden">
             <Image 
-              src="/icons/icon.png" 
+              src="/icons/icon.png?v=2" 
               alt="SSS" 
               width={32} 
               height={32}
-              className="w-full h-full object-cover" 
+              className="w-full h-full object-cover"
+              unoptimized
             />
           </div>
           <span className="font-semibold tracking-tight">{title}</span>

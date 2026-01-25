@@ -81,7 +81,7 @@ export default function OnboardingPage() {
         <div className="mb-8 text-center">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-slate-900 shadow-lg mb-4 overflow-hidden">
             <img 
-              src="/icons/icon.png" 
+              src="/icons/icon.png?v=2" 
               alt="SSS Ryder Cup" 
               className="w-full h-full object-cover"
             />
