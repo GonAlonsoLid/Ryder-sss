@@ -10,20 +10,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Loader2, User, Sparkles } from 'lucide-react';
+import { Loader2, Sparkles } from 'lucide-react';
 import { TEAM_JORGE_ID } from '@/lib/constants';
-
-const AVATARS = ['🏌️', '⛳', '🎯', '🏆', '🦅', '🐦', '🔥', '💪', '🎪', '🎩', '🌶️', '🚬', '🍺', '🎸', '🎲'];
+import { PlayerAvatar } from '@/components/ui/player-avatar';
 
 export default function OnboardingPage() {
   const router = useRouter();
   const { player, isLoading: authLoading, isAuthenticated, updateProfile } = useSimpleAuth();
   const [isLoading, setIsLoading] = useState(false);
-  
-  const [formData, setFormData] = useState({
-    nickname: '',
-    avatar: '🏌️',
-  });
+  const [nickname, setNickname] = useState('');
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -42,7 +37,7 @@ export default function OnboardingPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.nickname.trim()) {
+    if (!nickname.trim()) {
       toast.error('El apodo es obligatorio, ¡ponle gracia!');
       return;
     }
@@ -50,8 +45,7 @@ export default function OnboardingPage() {
     setIsLoading(true);
 
     const result = await updateProfile({
-      nickname: formData.nickname.trim(),
-      avatar_url: formData.avatar,
+      nickname: nickname.trim(),
     });
 
     setIsLoading(false);
@@ -101,15 +95,18 @@ export default function OnboardingPage() {
           className="mb-6 p-4 rounded-xl border-2 flex items-center gap-4"
           style={{ backgroundColor: `${teamColor}10`, borderColor: `${teamColor}40` }}
         >
-          <div 
-            className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl"
-            style={{ backgroundColor: `${teamColor}20`, border: `2px solid ${teamColor}` }}
-          >
-            {formData.avatar}
-          </div>
+          <PlayerAvatar 
+            avatarUrl={player.avatar_url}
+            name={player.display_name}
+            size="lg"
+            teamColor={teamColor}
+          />
           <div>
             <p className="font-bold text-lg">{player.display_name}</p>
             <p className="text-sm" style={{ color: teamColor }}>{teamName}</p>
+            {player.handicap && (
+              <p className="text-xs text-slate-500">HCP {player.handicap}</p>
+            )}
           </div>
         </div>
 
@@ -132,38 +129,21 @@ export default function OnboardingPage() {
                 </Label>
                 <Input
                   id="nickname"
-                  value={formData.nickname}
-                  onChange={(e) => setFormData(prev => ({ ...prev, nickname: e.target.value }))}
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
                   placeholder="El Tigre, Putt Master, etc."
                   required
                   className="h-12"
                   autoFocus
                 />
                 <p className="text-xs text-slate-500">
-                  Algo memorable para el finde 😎
+                  Algo memorable para el finde
                 </p>
               </div>
 
-              {/* Avatar */}
-              <div className="space-y-3">
-                <Label className="font-semibold">Avatar</Label>
-                <div className="flex flex-wrap gap-2 justify-center p-4 bg-slate-50 rounded-xl">
-                  {AVATARS.map((emoji) => (
-                    <button
-                      key={emoji}
-                      type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, avatar: emoji }))}
-                      className={`w-12 h-12 text-xl rounded-xl border-2 transition-all duration-200 ${
-                        formData.avatar === emoji
-                          ? 'border-primary bg-primary/10 scale-110 shadow-lg'
-                          : 'border-slate-200 hover:border-primary/50 hover:scale-105'
-                      }`}
-                    >
-                      {emoji}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <p className="text-xs text-slate-500 text-center">
+                Puedes cambiar tu foto de perfil en Ajustes
+              </p>
 
               <Button 
                 type="submit" 
@@ -176,9 +156,7 @@ export default function OnboardingPage() {
                     Guardando...
                   </>
                 ) : (
-                  <>
-                    🏌️ ¡Listo para jugar!
-                  </>
+                  '¡Listo para jugar!'
                 )}
               </Button>
             </form>

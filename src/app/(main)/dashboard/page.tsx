@@ -10,10 +10,9 @@ import { useTeamScores } from '@/hooks/use-team-scores';
 import { PageContainer } from '@/components/layout/page-container';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { 
-  Trophy, Users, Target, Beer, ChevronRight, 
+  Trophy, Users, Target, Beer, 
   Loader2, Flag, Zap 
 } from 'lucide-react';
 import Link from 'next/link';
@@ -22,6 +21,7 @@ import { EventsFeed } from '@/components/features/events-feed';
 import { ScoreCard } from '@/components/ui/score-card';
 import { MatchCard } from '@/components/ui/match-card';
 import { FloatingActionButton } from '@/components/ui/floating-action-button';
+import { PlayerAvatar } from '@/components/ui/player-avatar';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -63,12 +63,10 @@ export default function DashboardPage() {
   const userTeam = teams.find(t => t.id === profile?.team_id);
   const opposingTeam = teams.find(t => t.id !== profile?.team_id);
   const isTeamJorge = profile?.team_id === TEAM_JORGE_ID;
+  const teamColor = isTeamJorge ? '#DC2626' : '#2563EB';
 
-  // Calcular matches del usuario
-  const myMatches = matches.filter(m => 
-    m.team_a_players?.includes(profile?.id || '') || 
-    m.team_b_players?.includes(profile?.id || '')
-  );
+  // Todos los miembros de mi equipo (incluyéndome)
+  const myTeamMembers = profiles.filter(p => p.team_id === profile?.team_id);
 
   // Matches en progreso
   const liveMatches = matches.filter(m => m.status === 'in_progress');
@@ -76,35 +74,19 @@ export default function DashboardPage() {
   return (
     <PageContainer className="space-y-6">
       {/* Welcome Card */}
-      <Card className="bg-gradient-to-br from-primary/10 via-background to-background border-primary/20">
+      <Card className="bg-gradient-to-br from-primary/5 via-background to-background border-primary/20 shadow-elevation-md">
         <CardContent className="pt-6">
-          <div className="flex items-center gap-4">
-            {userTeam?.logo_url ? (
-              <img 
-                src={userTeam.logo_url} 
-                alt={userTeam.name}
-                className="w-16 h-16 rounded-2xl object-contain p-2"
-                style={{ 
-                  backgroundColor: isTeamJorge ? '#DC262610' : '#2563EB10',
-                  border: `2px solid ${isTeamJorge ? '#DC2626' : '#2563EB'}`
-                }}
-              />
-            ) : (
-              <div 
-                className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold"
-                style={{ 
-                  backgroundColor: isTeamJorge ? '#DC262620' : '#2563EB20',
-                  border: `2px solid ${isTeamJorge ? '#DC2626' : '#2563EB'}`,
-                  color: isTeamJorge ? '#DC2626' : '#2563EB'
-                }}
-              >
-                {userTeam?.name?.charAt(0) || 'T'}
-              </div>
-            )}
-            <div className="flex-1">
+          <div className="flex items-start gap-4">
+            <PlayerAvatar
+              avatarUrl={profile?.avatar_url}
+              name={profile?.display_name || ''}
+              size="lg"
+              teamColor={isTeamJorge ? '#DC2626' : '#2563EB'}
+            />
+            <div className="flex-1 min-w-0">
               <p className="text-sm text-muted-foreground">Bienvenido,</p>
-              <h1 className="text-2xl font-bold">{profile?.nickname || profile?.display_name}</h1>
-              <div className="flex items-center gap-2 mt-1">
+              <h1 className="text-2xl font-bold truncate">{profile?.nickname || profile?.display_name}</h1>
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
                 <Badge 
                   variant="outline" 
                   className="text-xs"
@@ -122,8 +104,85 @@ export default function DashboardPage() {
                   </Badge>
                 )}
               </div>
+              {profile?.bio && (
+                <p className="text-sm text-muted-foreground mt-3 italic">
+                  "{profile.bio}"
+                </p>
+              )}
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Mi Equipo */}
+      <Card className="shadow-elevation-sm" style={{ borderColor: `${teamColor}30` }}>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg flex items-center gap-2" style={{ fontFamily: 'var(--font-display)' }}>
+              {userTeam?.logo_url ? (
+                <img src={userTeam.logo_url} alt="" className="w-6 h-6 object-contain" />
+              ) : (
+                <Users className="w-5 h-5" style={{ color: teamColor }} />
+              )}
+              Mi Equipo
+            </CardTitle>
+            <Badge 
+              variant="outline" 
+              style={{ borderColor: teamColor, color: teamColor }}
+            >
+              {userTeam?.name}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {myTeamMembers.map((member) => {
+            const isMe = member.id === profile?.id;
+            return (
+              <div 
+                key={member.id} 
+                className="flex items-start gap-3 p-3 rounded-xl transition-colors"
+                style={{ 
+                  backgroundColor: `${teamColor}${isMe ? '15' : '08'}`,
+                  boxShadow: isMe ? `0 0 0 2px ${teamColor}` : 'none'
+                }}
+              >
+                <PlayerAvatar
+                  avatarUrl={member.avatar_url}
+                  name={member.display_name}
+                  size="md"
+                  teamColor={teamColor}
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-semibold truncate">{member.display_name}</p>
+                    {isMe && (
+                      <Badge variant="default" className="text-xs shrink-0" style={{ backgroundColor: teamColor }}>
+                        Tú
+                      </Badge>
+                    )}
+                    {member.handicap && (
+                      <Badge variant="secondary" className="text-xs shrink-0">
+                        HCP {member.handicap}
+                      </Badge>
+                    )}
+                  </div>
+                  {member.nickname && (
+                    <p className="text-xs text-muted-foreground">"{member.nickname}"</p>
+                  )}
+                  {member.bio && (
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2 italic">
+                      {member.bio}
+                    </p>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+          {myTeamMembers.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              No hay miembros del equipo
+            </p>
+          )}
         </CardContent>
       </Card>
 
@@ -170,11 +229,11 @@ export default function DashboardPage() {
               const teamB = teams.find(t => t.id === match.team_b_id);
               const teamAPlayers = (match.team_a_players || []).map(id => {
                 const p = profiles.find(pr => pr.id === id);
-                return p?.nickname || p?.display_name || 'Sin asignar';
+                return { name: p?.nickname || p?.display_name || 'Sin asignar', handicap: p?.handicap };
               });
               const teamBPlayers = (match.team_b_players || []).map(id => {
                 const p = profiles.find(pr => pr.id === id);
-                return p?.nickname || p?.display_name || 'Sin asignar';
+                return { name: p?.nickname || p?.display_name || 'Sin asignar', handicap: p?.handicap };
               });
 
               return (
@@ -276,83 +335,6 @@ export default function DashboardPage() {
           </Card>
         </Link>
       </div>
-
-      {/* My Matches */}
-      {myMatches.length > 0 && (
-        <Card className="shadow-elevation-sm">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg" style={{ fontFamily: 'var(--font-display)' }}>
-                Mis Partidos
-              </CardTitle>
-              <Link href="/tournament">
-                <Button variant="ghost" size="sm" className="text-xs">
-                  Ver todos <ChevronRight className="w-4 h-4 ml-1" />
-                </Button>
-              </Link>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {myMatches.slice(0, 3).map((match) => {
-              const round = rounds.find(r => r.id === match.round_id);
-              const teamA = teams.find(t => t.id === match.team_a_id);
-              const teamB = teams.find(t => t.id === match.team_b_id);
-              const teamAPlayers = (match.team_a_players || []).map(id => {
-                const p = profiles.find(pr => pr.id === id);
-                return p?.nickname || p?.display_name || 'Sin asignar';
-              });
-              const teamBPlayers = (match.team_b_players || []).map(id => {
-                const p = profiles.find(pr => pr.id === id);
-                return p?.nickname || p?.display_name || 'Sin asignar';
-              });
-
-              return (
-                <MatchCard
-                  key={match.id}
-                  id={match.id}
-                  roundName={round?.name || ''}
-                  format={ROUND_FORMAT_LABELS[round?.format || 'singles']}
-                  scoreDisplay={match.score_display || undefined}
-                  status={match.status}
-                  teamAPlayers={teamAPlayers}
-                  teamBPlayers={teamBPlayers}
-                  teamAName={teamA?.name || ''}
-                  teamBName={teamB?.name || ''}
-                  teamAColor={teamA?.id === TEAM_JORGE_ID ? '#EF4444' : '#3B82F6'}
-                  teamBColor={teamB?.id === TEAM_JORGE_ID ? '#EF4444' : '#3B82F6'}
-                  href={`/matches/${match.id}`}
-                />
-              );
-            })}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Rounds Overview */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">Programa del Finde</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {rounds.map((round) => (
-            <Link key={round.id} href={`/rounds/${round.id}`}>
-              <div className="p-3 rounded-lg border hover:bg-muted/50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">{round.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {ROUND_FORMAT_LABELS[round.format]}
-                    </p>
-                  </div>
-                  <Badge variant={round.is_completed ? 'default' : 'outline'}>
-                    {round.is_completed ? 'Finalizada' : 'Pendiente'}
-                  </Badge>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </CardContent>
-      </Card>
 
       <Separator />
 

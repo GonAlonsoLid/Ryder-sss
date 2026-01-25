@@ -12,9 +12,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { TEAM_JORGE_ID, ROUND_FORMAT_LABELS } from '@/lib/constants';
 
-// Fechas del torneo
-const SATURDAY = new Date('2026-02-07');
-const SUNDAY = new Date('2026-02-08');
+// Fechas del torneo - Último finde de enero 2026
+const SATURDAY = new Date('2026-01-31');
+const SUNDAY = new Date('2026-02-01');
 
 // Información de los campos
 const CLUB_INFO: Record<string, { 
@@ -72,11 +72,11 @@ export default function TournamentPage() {
     const updatePhase = () => {
       const now = new Date();
       
-      // Fechas exactas del torneo
-      const saturdayStart = new Date('2026-02-07T00:00:00');
-      const saturdayEnd = new Date('2026-02-07T23:59:59');
-      const sundayStart = new Date('2026-02-08T00:00:00');
-      const sundayEnd = new Date('2026-02-08T23:59:59');
+      // Fechas exactas del torneo - 31 enero y 1 febrero 2026
+      const saturdayStart = new Date('2026-01-31T00:00:00');
+      const saturdayEnd = new Date('2026-01-31T23:59:59');
+      const sundayStart = new Date('2026-02-01T00:00:00');
+      const sundayEnd = new Date('2026-02-01T23:59:59');
       
       if (now >= saturdayStart && now <= saturdayEnd) {
         // Es sábado 7 de febrero 2026
@@ -93,7 +93,7 @@ export default function TournamentPage() {
       } else {
         // Todavía no ha empezado - mostrar countdown
         setPhase('before');
-        const target = new Date('2026-02-07T09:00:00');
+        const target = new Date('2026-01-31T09:00:00');
         const difference = target.getTime() - now.getTime();
         
         if (difference > 0) {
@@ -206,7 +206,7 @@ export default function TournamentPage() {
                 </div>
 
                 <p className="text-slate-500 text-sm mt-6">
-                  7-8 Febrero 2026
+                  31 Enero - 1 Febrero 2026
                 </p>
               </div>
             </CardContent>
@@ -471,7 +471,7 @@ export default function TournamentPage() {
           <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
               <Calendar className="w-4 h-4" />
-              <span>7-8 Feb 2026</span>
+              <span>31 Ene - 1 Feb 2026</span>
             </div>
             <div className="flex items-center gap-1">
               <MapPin className="w-4 h-4" />

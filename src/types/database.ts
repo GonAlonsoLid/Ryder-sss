@@ -7,7 +7,7 @@ export type MatchResult = 'team_a_win' | 'team_b_win' | 'draw' | 'in_progress';
 export type RoundFormat = 'foursomes' | 'fourball' | 'singles' | 'scramble';
 export type ChallengeType = 'individual' | 'pair' | 'team';
 export type ChallengeStatus = 'assigned' | 'completed' | 'failed' | 'pending';
-export type DrinkType = 'cerveza' | 'vino' | 'chupito' | 'copa' | 'agua_fake' | 'otro';
+export type DrinkType = 'cerveza' | 'chupito' | 'copa' | 'hidalgo';
 export type EventType = 'score_update' | 'drink' | 'challenge_completed' | 'challenge_failed' | 'trophy_awarded' | 'match_started' | 'match_completed';
 
 export interface Profile {
@@ -15,6 +15,7 @@ export interface Profile {
   display_name: string;
   nickname: string | null;
   avatar_url: string | null;
+  bio: string | null;
   role: UserRole;
   team_id: string | null;
   secret_word: string | null;

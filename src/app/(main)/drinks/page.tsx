@@ -13,10 +13,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Loader2, Beer, TrendingUp, Sparkles } from 'lucide-react';
-import { SSS_TOURNAMENT_ID, DRINK_EMOJIS, DRINK_LABELS, timeAgo, POINTS_PER_DRINK, TEAM_JORGE_ID } from '@/lib/constants';
+import { SSS_TOURNAMENT_ID, DRINK_EMOJIS, DRINK_LABELS, timeAgo, DRINK_POINTS, TEAM_JORGE_ID } from '@/lib/constants';
 import type { Drink, Profile, DrinkType } from '@/types/database';
 
-const DRINK_TYPES: DrinkType[] = ['cerveza', 'vino', 'chupito', 'copa', 'agua_fake', 'otro'];
+const DRINK_TYPES: DrinkType[] = ['cerveza', 'chupito', 'copa', 'hidalgo'];
 
 interface DrinkWithProfile extends Drink {
   profile?: Profile;
@@ -125,7 +125,7 @@ export default function DrinksPage() {
         [drinkType]: (prev[drinkType] || 0) + 1,
       }));
 
-      toast.success(`${DRINK_EMOJIS[drinkType]} ¡+${POINTS_PER_DRINK} pts para ${myTeamName}!`);
+      toast.success(`${DRINK_EMOJIS[drinkType]} ¡+${DRINK_POINTS[drinkType]} pts para ${myTeamName}!`);
       fetchDrinks();
       refetchScores(); // Refresh team scores
     }
@@ -175,11 +175,9 @@ export default function DrinksPage() {
                 </p>
               </div>
             </div>
-            <div className="text-right">
-              <p className="text-sm text-muted-foreground">+1 copa =</p>
-              <p className="text-lg font-bold" style={{ color: myTeamColor }}>
-                +{POINTS_PER_DRINK} pts
-              </p>
+            <div className="text-right text-xs text-muted-foreground">
+              <p>🍺 +0.1 | 🥃 +0.2</p>
+              <p>🍸 +0.5 | 🫗 +0.7</p>
             </div>
           </div>
         </CardContent>
@@ -193,7 +191,7 @@ export default function DrinksPage() {
             Registrar Consumición
           </CardTitle>
           <p className="text-sm text-muted-foreground mt-1">
-            Cada copa suma <span className="font-bold text-amber-600">{POINTS_PER_DRINK} puntos</span> al marcador
+            Cada consumición suma puntos al marcador
           </p>
         </CardHeader>
         <CardContent>
@@ -212,6 +210,7 @@ export default function DrinksPage() {
                   <>
                     <span className="text-4xl">{DRINK_EMOJIS[type]}</span>
                     <span className="text-sm font-medium">{DRINK_LABELS[type]}</span>
+                    <span className="text-xs text-amber-600 font-bold">+{DRINK_POINTS[type]} pts</span>
                     {myDrinks[type] > 0 && (
                       <Badge 
                         className="absolute top-2 right-2 bg-amber-500 text-white text-xs px-2"
@@ -267,13 +266,13 @@ export default function DrinksPage() {
                   key={drink.id}
                   className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50"
                 >
-                  <span className="text-2xl">{DRINK_EMOJIS[drink.drink_type]}</span>
+                  <span className="text-2xl">{DRINK_EMOJIS[drink.drink_type] || '🥤'}</span>
                   <div className="flex-1">
                     <p className="text-sm">
                       <span className="font-medium">
                         {drink.profile?.nickname || drink.profile?.display_name || 'Alguien'}
                       </span>
-                      {' '}se ha tomado {drink.count > 1 ? `${drink.count}x ` : ''}{DRINK_LABELS[drink.drink_type].toLowerCase()}
+                      {' '}se ha tomado {drink.count > 1 ? `${drink.count}x ` : ''}{(DRINK_LABELS[drink.drink_type] || drink.drink_type).toLowerCase()}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {timeAgo(drink.created_at)}

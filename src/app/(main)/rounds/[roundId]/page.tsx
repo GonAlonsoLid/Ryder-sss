@@ -59,6 +59,25 @@ export default function RoundPage({ params }: { params: Promise<{ roundId: strin
       .join(' & ');
   };
 
+  const getPlayersHandicap = (playerIds: string[]): number => {
+    if (!playerIds || playerIds.length === 0) return 0;
+    return playerIds.reduce((sum, id) => {
+      const player = profiles.find(p => p.id === id);
+      return sum + (player?.handicap || 0);
+    }, 0);
+  };
+
+  const getStrokesInfo = (teamAIds: string[], teamBIds: string[]) => {
+    const hcpA = getPlayersHandicap(teamAIds);
+    const hcpB = getPlayersHandicap(teamBIds);
+    const diff = Math.abs(hcpA - hcpB);
+    if (diff === 0) return null;
+    return {
+      receiver: hcpA > hcpB ? 'A' : 'B',
+      strokes: Math.round(diff)
+    };
+  };
+
   if (isLoading) {
     return (
       <PageContainer className="flex items-center justify-center">
@@ -150,6 +169,9 @@ export default function RoundPage({ params }: { params: Promise<{ roundId: strin
           const teamB = teams.find(t => t.id === match.team_b_id);
           const isLive = match.status === 'in_progress';
           const isCompleted = match.status === 'completed';
+          const strokesInfo = getStrokesInfo(match.team_a_players, match.team_b_players);
+          const hcpA = getPlayersHandicap(match.team_a_players);
+          const hcpB = getPlayersHandicap(match.team_b_players);
 
           return (
             <Link key={match.id} href={`/matches/${match.id}`}>
@@ -170,6 +192,18 @@ export default function RoundPage({ params }: { params: Promise<{ roundId: strin
                     )}
                   </div>
 
+                  {/* Strokes info */}
+                  {strokesInfo && (
+                    <div className="mb-3 text-center">
+                      <Badge variant="outline" className="text-xs bg-amber-50 border-amber-200 text-amber-700">
+                        {strokesInfo.receiver === 'A' 
+                          ? `${getPlayerNames(match.team_a_players)} recibe ${strokesInfo.strokes} golpes`
+                          : `${getPlayerNames(match.team_b_players)} recibe ${strokesInfo.strokes} golpes`
+                        }
+                      </Badge>
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between">
                     {/* Team A */}
                     <div className="flex-1">
@@ -178,9 +212,14 @@ export default function RoundPage({ params }: { params: Promise<{ roundId: strin
                           className="w-3 h-3 rounded-full"
                           style={{ backgroundColor: teamA?.id === TEAM_JORGE_ID ? '#DC2626' : '#2563EB' }}
                         />
-                        <span className="text-sm font-medium truncate">
-                          {getPlayerNames(match.team_a_players)}
-                        </span>
+                        <div>
+                          <span className="text-sm font-medium truncate block">
+                            {getPlayerNames(match.team_a_players)}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            HCP {hcpA}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
@@ -189,7 +228,7 @@ export default function RoundPage({ params }: { params: Promise<{ roundId: strin
                       <p className={`text-xl font-mono font-bold ${
                         isLive ? 'text-primary' : ''
                       }`}>
-                        {match.score_display}
+                        {match.score_display || 'AS'}
                       </p>
                       {match.holes_played > 0 && (
                         <p className="text-xs text-muted-foreground">
@@ -201,9 +240,14 @@ export default function RoundPage({ params }: { params: Promise<{ roundId: strin
                     {/* Team B */}
                     <div className="flex-1 text-right">
                       <div className="flex items-center gap-2 justify-end mb-1">
-                        <span className="text-sm font-medium truncate">
-                          {getPlayerNames(match.team_b_players)}
-                        </span>
+                        <div className="text-right">
+                          <span className="text-sm font-medium truncate block">
+                            {getPlayerNames(match.team_b_players)}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            HCP {hcpB}
+                          </span>
+                        </div>
                         <div 
                           className="w-3 h-3 rounded-full"
                           style={{ backgroundColor: teamB?.id === TEAM_JORGE_ID ? '#DC2626' : '#2563EB' }}

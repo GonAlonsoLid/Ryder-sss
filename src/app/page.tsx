@@ -1,11 +1,60 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Trophy, Flame, Zap, Sparkles } from 'lucide-react';
+import { ArrowRight, Trophy, Zap, Sparkles, Lock, Calendar } from 'lucide-react';
+
+// Fecha de apertura: Viernes 30 de enero 2026 a las 8:00 AM
+const UNLOCK_DATE = new Date('2026-01-30T08:00:00');
+
+function useCountdown(targetDate: Date) {
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+    isUnlocked: false,
+  });
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = new Date();
+      const difference = targetDate.getTime() - now.getTime();
+      
+      if (difference <= 0) {
+        return { days: 0, hours: 0, minutes: 0, seconds: 0, isUnlocked: true };
+      }
+
+      return {
+        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((difference / 1000 / 60) % 60),
+        seconds: Math.floor((difference / 1000) % 60),
+        isUnlocked: false,
+      };
+    };
+
+    setTimeLeft(calculateTimeLeft());
+    
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [targetDate]);
+
+  return timeLeft;
+}
 
 export default function LandingPage() {
   const router = useRouter();
+  const { days, hours, minutes, seconds, isUnlocked } = useCountdown(UNLOCK_DATE);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 overflow-hidden relative">
@@ -114,6 +163,83 @@ export default function LandingPage() {
           </div>
         </div>
 
+        {/* Countdown Section */}
+        {mounted && !isUnlocked && (
+          <div className="mb-10 w-full max-w-lg">
+            <div className="relative">
+              {/* Glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-amber-400/20 via-red-400/20 to-blue-400/20 rounded-3xl blur-2xl" />
+              
+              <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl border border-slate-200 shadow-2xl p-6 md:p-8">
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <Lock className="w-4 h-4 text-slate-600" />
+                  <p className="text-sm font-bold text-slate-600 tracking-wider uppercase">
+                    Comienza en
+                  </p>
+                </div>
+                
+                {/* Countdown Numbers */}
+                <div className="grid grid-cols-4 gap-2 md:gap-4">
+                  <div className="text-center">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-slate-900/5 rounded-2xl blur-lg" />
+                      <div className="relative bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-3 md:p-4 shadow-xl">
+                        <span className="text-3xl md:text-5xl font-black text-white tabular-nums" style={{ fontFamily: 'var(--font-display)' }}>
+                          {String(days).padStart(2, '0')}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="mt-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Días</p>
+                  </div>
+                  
+                  <div className="text-center">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-slate-900/5 rounded-2xl blur-lg" />
+                      <div className="relative bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-3 md:p-4 shadow-xl">
+                        <span className="text-3xl md:text-5xl font-black text-white tabular-nums" style={{ fontFamily: 'var(--font-display)' }}>
+                          {String(hours).padStart(2, '0')}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="mt-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Horas</p>
+                  </div>
+                  
+                  <div className="text-center">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-slate-900/5 rounded-2xl blur-lg" />
+                      <div className="relative bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-3 md:p-4 shadow-xl">
+                        <span className="text-3xl md:text-5xl font-black text-white tabular-nums" style={{ fontFamily: 'var(--font-display)' }}>
+                          {String(minutes).padStart(2, '0')}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="mt-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Min</p>
+                  </div>
+                  
+                  <div className="text-center">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-amber-500/20 rounded-2xl blur-lg animate-pulse" />
+                      <div className="relative bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl p-3 md:p-4 shadow-xl shadow-amber-300/50">
+                        <span className="text-3xl md:text-5xl font-black text-white tabular-nums" style={{ fontFamily: 'var(--font-display)' }}>
+                          {String(seconds).padStart(2, '0')}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="mt-2 text-xs font-bold text-amber-600 uppercase tracking-wider">Seg</p>
+                  </div>
+                </div>
+
+                <div className="mt-6 flex items-center justify-center gap-2 text-slate-500">
+                  <Calendar className="w-4 h-4" />
+                  <p className="text-sm font-medium">
+                    Viernes 30 de Enero • 08:00
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Trophy Divider */}
         <div className="mb-8 flex items-center gap-3">
           <div className="w-16 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-amber-400 rounded-full" />
@@ -124,19 +250,31 @@ export default function LandingPage() {
         </div>
 
         {/* CTA Button */}
-        <Button
-          size="lg"
-          className="h-16 px-12 text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 text-white shadow-2xl shadow-slate-400/30 border-0 transition-all duration-300 hover:scale-105 hover:shadow-slate-500/40 ring-4 ring-slate-200"
-          onClick={() => router.push('/login')}
-        >
-          <Zap className="w-5 h-5 mr-2 text-amber-400" />
-          ENTRAR AL TORNEO
-          <ArrowRight className="w-5 h-5 ml-2" />
-        </Button>
+        {mounted && (
+          isUnlocked ? (
+            <Button
+              size="lg"
+              className="h-16 px-12 text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 text-white shadow-2xl shadow-slate-400/30 border-0 transition-all duration-300 hover:scale-105 hover:shadow-slate-500/40 ring-4 ring-slate-200"
+              onClick={() => router.push('/login')}
+            >
+              <Zap className="w-5 h-5 mr-2 text-amber-400" />
+              ENTRAR AL TORNEO
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          ) : (
+            <div className="relative">
+              <div className="absolute inset-0 bg-slate-300/50 rounded-2xl blur-lg" />
+              <div className="relative bg-gradient-to-r from-slate-200 to-slate-300 text-slate-500 h-16 px-12 rounded-2xl flex items-center justify-center gap-3 font-bold text-lg shadow-inner cursor-not-allowed ring-4 ring-slate-100">
+                <Lock className="w-5 h-5" />
+                BLOQUEADO
+              </div>
+            </div>
+          )
+        )}
 
         {/* Footer */}
         <p className="mt-10 text-xs text-slate-400 tracking-widest uppercase font-medium">
-          Solo para miembros del grupo SSS
+          {isUnlocked ? 'Solo para miembros del grupo SSS' : 'Prepárate... Se acerca la batalla'}
         </p>
 
         {/* Floating Elements */}

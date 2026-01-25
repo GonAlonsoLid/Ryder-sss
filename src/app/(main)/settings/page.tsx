@@ -13,21 +13,23 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { Loader2, User, LogOut, Shield, Save, Lock } from 'lucide-react';
+import { Loader2, User, LogOut, Shield, Save, Lock, Camera, Upload } from 'lucide-react';
+import { getSupabaseClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { TEAM_JORGE_ID } from '@/lib/constants';
-
-const AVATARS = ['🏌️', '⛳', '🎯', '🏆', '🦅', '🐦', '🔥', '💪', '🎪', '🎩', '🌶️', '🚬', '🍺', '🎸', '🎲'];
+import { PlayerAvatar } from '@/components/ui/player-avatar';
 
 export default function SettingsPage() {
   const router = useRouter();
   const { player, isAdmin, isLoading: authLoading, logout, updateProfile, isAuthenticated } = useSimpleAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [formData, setFormData] = useState({
     nickname: '',
-    avatar_url: '🏌️',
+    avatar_url: '',
   });
   const [newSecretWord, setNewSecretWord] = useState('');
+  const supabase = getSupabaseClient();
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -41,10 +43,65 @@ export default function SettingsPage() {
     if (player) {
       setFormData({
         nickname: player.nickname || '',
-        avatar_url: player.avatar_url || '🏌️',
+        avatar_url: player.avatar_url || '',
       });
     }
   }, [player]);
+
+  // Handle file upload
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !player?.id) return;
+
+    // Validate file
+    if (!file.type.startsWith('image/')) {
+      toast.error('Solo se permiten imágenes');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('La imagen debe ser menor a 2MB');
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${player.id}-${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
+
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      // Update form data
+      setFormData(prev => ({ ...prev, avatar_url: publicUrl }));
+      
+      // Auto-save the new avatar to database
+      const result = await updateProfile({ avatar_url: publicUrl });
+      
+      if (result.success) {
+        toast.success('Foto actualizada correctamente');
+      } else {
+        toast.error('Foto subida, pero error al guardar');
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('Error al subir la foto');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!player?.id) return;
@@ -111,25 +168,28 @@ export default function SettingsPage() {
       {/* Profile Card */}
       <Card>
         <CardHeader className="pb-4">
-          <div className="flex items-center gap-4">
-            <div 
-              className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl"
-              style={{ 
-                backgroundColor: `${teamColor}20`,
-                border: `2px solid ${teamColor}`
-              }}
-            >
-              {player.avatar_url || '🏌️'}
-            </div>
-            <div>
+          <div className="flex items-start gap-4">
+            <PlayerAvatar
+              avatarUrl={formData.avatar_url || player.avatar_url}
+              name={player.display_name}
+              size="lg"
+              teamColor={teamColor}
+            />
+            <div className="flex-1">
               <CardTitle className="text-xl">{player.display_name}</CardTitle>
-              <CardDescription className="flex items-center gap-2 mt-1">
+              {player.nickname && (
+                <p className="text-sm text-muted-foreground">"{player.nickname}"</p>
+              )}
+              <CardDescription className="flex items-center gap-2 mt-2">
                 <Badge 
                   variant="outline"
                   style={{ borderColor: teamColor, color: teamColor }}
                 >
                   {teamName}
                 </Badge>
+                {player.handicap && (
+                  <Badge variant="secondary">HCP {player.handicap}</Badge>
+                )}
                 {isAdmin && (
                   <Badge variant="default" className="bg-amber-500">
                     <Shield className="w-3 h-3 mr-1" />
@@ -137,6 +197,11 @@ export default function SettingsPage() {
                   </Badge>
                 )}
               </CardDescription>
+              {player.bio && (
+                <p className="text-sm text-muted-foreground mt-3 italic">
+                  "{player.bio}"
+                </p>
+              )}
             </div>
           </div>
         </CardHeader>
@@ -163,22 +228,52 @@ export default function SettingsPage() {
           </div>
 
           <div className="space-y-2">
-            <Label>Avatar</Label>
-            <div className="flex flex-wrap gap-2 p-3 bg-muted/50 rounded-lg">
-              {AVATARS.map((emoji) => (
-                <button
-                  key={emoji}
-                  type="button"
-                  onClick={() => setFormData(prev => ({ ...prev, avatar_url: emoji }))}
-                  className={`w-10 h-10 text-lg rounded-lg border-2 transition-all ${
-                    formData.avatar_url === emoji
-                      ? 'border-primary bg-primary/10 scale-110'
-                      : 'border-border hover:border-primary/50'
-                  }`}
-                >
-                  {emoji}
-                </button>
-              ))}
+            <Label>Foto de Perfil</Label>
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <PlayerAvatar
+                  avatarUrl={formData.avatar_url}
+                  name={player.display_name}
+                  size="lg"
+                  teamColor={teamColor}
+                />
+                {isUploading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
+                    <Loader2 className="w-6 h-6 animate-spin text-white" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  id="avatar-upload"
+                  disabled={isUploading}
+                />
+                <label htmlFor="avatar-upload">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full cursor-pointer"
+                    disabled={isUploading}
+                    asChild
+                  >
+                    <span>
+                      {isUploading ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Camera className="w-4 h-4 mr-2" />
+                      )}
+                      Cambiar Foto
+                    </span>
+                  </Button>
+                </label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  JPG, PNG o GIF. Máx 2MB.
+                </p>
+              </div>
             </div>
           </div>
 

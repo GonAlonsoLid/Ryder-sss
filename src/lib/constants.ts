@@ -18,27 +18,31 @@ export const TEAM_YAGO_PLAYERS = ['Yago', 'Marcos', 'Enrique', 'Semmler', 'Gonzi
 
 export const POINTS_PER_MATCH_WIN = 1;
 export const POINTS_PER_MATCH_DRAW = 0.5;
-export const POINTS_PER_DRINK = 0.1;
+export const POINTS_PER_DRINK = 0.1; // Default fallback
+
+// Puntos por tipo de bebida
+export const DRINK_POINTS: Record<string, number> = {
+  cerveza: 0.1,
+  chupito: 0.2,
+  copa: 0.5,
+  hidalgo: 0.7,
+};
 export const POINTS_PER_CHALLENGE_DEFAULT = 0.5;
 
 // Drink emojis
 export const DRINK_EMOJIS: Record<string, string> = {
   cerveza: '🍺',
-  vino: '🍷',
   chupito: '🥃',
   copa: '🍸',
-  agua_fake: '💧',
-  otro: '🥤',
+  hidalgo: '🫗',
 };
 
 // Drink labels
 export const DRINK_LABELS: Record<string, string> = {
   cerveza: 'Cerveza',
-  vino: 'Vino',
   chupito: 'Chupito',
   copa: 'Copa',
-  agua_fake: 'Agua (fake)',
-  otro: 'Otro',
+  hidalgo: 'Hidalgo',
 };
 
 // Match result labels

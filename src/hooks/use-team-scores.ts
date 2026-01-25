@@ -9,6 +9,7 @@ import {
   POINTS_PER_MATCH_WIN,
   POINTS_PER_MATCH_DRAW,
   POINTS_PER_DRINK,
+  DRINK_POINTS,
   POINTS_PER_CHALLENGE_DEFAULT,
 } from '@/lib/constants';
 import type { Match, Drink, ChallengeAssignment, Profile, Challenge } from '@/types/database';
@@ -188,16 +189,18 @@ function calculateDrinkPoints(drinks: Drink[], profiles: Profile[], teamId: stri
   const teamUserIds = new Set(profiles.filter(p => p.team_id === teamId).map(p => p.id));
   
   let count = 0;
+  let points = 0;
+  
   for (const drink of drinks) {
     if (teamUserIds.has(drink.user_id)) {
       count += drink.count;
+      // Puntos según el tipo de bebida
+      const drinkPoints = DRINK_POINTS[drink.drink_type] ?? POINTS_PER_DRINK;
+      points += drink.count * drinkPoints;
     }
   }
 
-  return {
-    points: count * POINTS_PER_DRINK,
-    count,
-  };
+  return { points, count };
 }
 
 function calculateChallengePoints(
