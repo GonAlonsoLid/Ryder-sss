@@ -394,9 +394,6 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
                       playerAColor={teamA?.id === TEAM_JORGE_ID ? '#DC2626' : '#2563EB'}
                       playerBColor={teamB?.id === TEAM_JORGE_ID ? '#DC2626' : '#2563EB'}
                       canEdit={canEdit}
-                      onTotalChange={(a, b) => {
-                        setFormData(prev => ({ ...prev, team_a_strokes: a, team_b_strokes: b }));
-                      }}
                     />
                   </div>
                 ) : (

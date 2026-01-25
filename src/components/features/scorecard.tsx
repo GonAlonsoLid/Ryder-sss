@@ -19,7 +19,6 @@ interface ScorecardProps {
   playerAColor: string;
   playerBColor: string;
   canEdit: boolean;
-  onTotalChange?: (playerATotal: number, playerBTotal: number) => void;
 }
 
 export function Scorecard({
@@ -31,7 +30,6 @@ export function Scorecard({
   playerAColor,
   playerBColor,
   canEdit,
-  onTotalChange,
 }: ScorecardProps) {
   const [scores, setScores] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
@@ -72,13 +70,6 @@ export function Scorecard({
   // Calculate totals
   const playerATotal = VALDECANAS_HOLES.reduce((sum, h) => sum + (scores[`${h.hole}-${playerAId}`] || 0), 0);
   const playerBTotal = VALDECANAS_HOLES.reduce((sum, h) => sum + (scores[`${h.hole}-${playerBId}`] || 0), 0);
-
-  // Notify parent of total changes
-  useEffect(() => {
-    if (onTotalChange) {
-      onTotalChange(playerATotal, playerBTotal);
-    }
-  }, [playerATotal, playerBTotal, onTotalChange]);
 
   const handleScoreChange = (hole: number, playerId: string, delta: number) => {
     const key = `${hole}-${playerId}`;
