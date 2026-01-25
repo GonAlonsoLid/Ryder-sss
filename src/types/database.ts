@@ -87,6 +87,16 @@ export interface MatchUpdate {
   created_at: string;
 }
 
+export interface HoleScore {
+  id: string;
+  match_id: string;
+  hole_number: number;
+  player_id: string;
+  strokes: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Drink {
   id: string;
   tournament_id: string;

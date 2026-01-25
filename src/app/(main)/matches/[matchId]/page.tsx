@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { Loader2, ChevronLeft, Save, Play, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import { TEAM_JORGE_ID, SSS_TOURNAMENT_ID } from '@/lib/constants';
+import { Scorecard } from '@/components/features/scorecard';
 import type { Match, Round, MatchStatus, MatchResult } from '@/types/database';
 
 const MATCHPLAY_SCORE_OPTIONS = [
@@ -381,96 +382,22 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
 
             {match.status !== 'pending' && (
               <>
-                {/* STROKE PLAY UI (Singles) */}
+                {/* STROKE PLAY UI (Singles) - Hole by Hole Scorecard */}
                 {isStrokePlay ? (
                   <div className="space-y-6">
-                    <div className="text-center">
-                      <Badge variant="outline" className="mb-4">
-                        Stroke Play - Golpes Totales
-                      </Badge>
-                    </div>
-                    
-                    {/* Team A Strokes */}
-                    <div className="space-y-3">
-                      <label className="text-sm font-bold block" style={{ color: teamA?.id === TEAM_JORGE_ID ? '#DC2626' : '#2563EB' }}>
-                        {teamAPlayers.join(' & ')}
-                      </label>
-                      <div className="flex items-center gap-4">
-                        <Button
-                          type="button"
-                          onClick={() => setFormData(prev => ({ ...prev, team_a_strokes: Math.max(0, prev.team_a_strokes - 1) }))}
-                          className="h-16 w-16 text-2xl font-bold bg-red-500 hover:bg-red-600 text-white rounded-xl"
-                        >
-                          -
-                        </Button>
-                        <div className="flex-1 text-center">
-                          <span 
-                            className="text-6xl font-black"
-                            style={{ fontFamily: 'var(--font-display)', color: teamA?.id === TEAM_JORGE_ID ? '#DC2626' : '#2563EB' }}
-                          >
-                            {formData.team_a_strokes}
-                          </span>
-                          <p className="text-sm text-muted-foreground">golpes</p>
-                        </div>
-                        <Button
-                          type="button"
-                          onClick={() => setFormData(prev => ({ ...prev, team_a_strokes: prev.team_a_strokes + 1 }))}
-                          className="h-16 w-16 text-2xl font-bold bg-green-500 hover:bg-green-600 text-white rounded-xl"
-                        >
-                          +
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* VS Divider */}
-                    <div className="text-center text-muted-foreground text-sm font-bold">VS</div>
-
-                    {/* Team B Strokes */}
-                    <div className="space-y-3">
-                      <label className="text-sm font-bold block" style={{ color: teamB?.id === TEAM_JORGE_ID ? '#DC2626' : '#2563EB' }}>
-                        {teamBPlayers.join(' & ')}
-                      </label>
-                      <div className="flex items-center gap-4">
-                        <Button
-                          type="button"
-                          onClick={() => setFormData(prev => ({ ...prev, team_b_strokes: Math.max(0, prev.team_b_strokes - 1) }))}
-                          className="h-16 w-16 text-2xl font-bold bg-red-500 hover:bg-red-600 text-white rounded-xl"
-                        >
-                          -
-                        </Button>
-                        <div className="flex-1 text-center">
-                          <span 
-                            className="text-6xl font-black"
-                            style={{ fontFamily: 'var(--font-display)', color: teamB?.id === TEAM_JORGE_ID ? '#DC2626' : '#2563EB' }}
-                          >
-                            {formData.team_b_strokes}
-                          </span>
-                          <p className="text-sm text-muted-foreground">golpes</p>
-                        </div>
-                        <Button
-                          type="button"
-                          onClick={() => setFormData(prev => ({ ...prev, team_b_strokes: prev.team_b_strokes + 1 }))}
-                          className="h-16 w-16 text-2xl font-bold bg-green-500 hover:bg-green-600 text-white rounded-xl"
-                        >
-                          +
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Difference indicator */}
-                    {formData.team_a_strokes > 0 || formData.team_b_strokes > 0 ? (
-                      <div className="text-center p-4 bg-muted/50 rounded-xl">
-                        <p className="text-sm text-muted-foreground">Diferencia</p>
-                        <p className="text-2xl font-black" style={{ fontFamily: 'var(--font-display)' }}>
-                          {formData.team_a_strokes === formData.team_b_strokes 
-                            ? 'EMPATE'
-                            : formData.team_a_strokes < formData.team_b_strokes
-                              ? `${teamAPlayers[0]} gana por ${formData.team_b_strokes - formData.team_a_strokes}`
-                              : `${teamBPlayers[0]} gana por ${formData.team_a_strokes - formData.team_b_strokes}`
-                          }
-                        </p>
-                      </div>
-                    ) : null}
+                    <Scorecard
+                      matchId={matchId}
+                      playerAId={match.team_a_players[0]}
+                      playerBId={match.team_b_players[0]}
+                      playerAName={teamAPlayers[0]}
+                      playerBName={teamBPlayers[0]}
+                      playerAColor={teamA?.id === TEAM_JORGE_ID ? '#DC2626' : '#2563EB'}
+                      playerBColor={teamB?.id === TEAM_JORGE_ID ? '#DC2626' : '#2563EB'}
+                      canEdit={canEdit}
+                      onTotalChange={(a, b) => {
+                        setFormData(prev => ({ ...prev, team_a_strokes: a, team_b_strokes: b }));
+                      }}
+                    />
                   </div>
                 ) : (
                   /* MATCHPLAY UI (Scramble) */

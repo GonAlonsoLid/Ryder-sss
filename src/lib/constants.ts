@@ -76,6 +76,66 @@ export const ROUND_FORMAT_DESCRIPTIONS: Record<string, string> = {
   scramble: 'Todos los jugadores del equipo juegan desde la mejor posición',
 };
 
+// =====================
+// COURSE DATA - VALDECAÑAS (Singles - Sunday)
+// =====================
+// Par: 72 (typical 18-hole course)
+// Adjust these values if you have the actual scorecard
+
+export interface HoleInfo {
+  hole: number;
+  par: number;
+  strokeIndex: number; // Handicap index (difficulty ranking 1-18)
+  distance: number; // meters
+}
+
+export const VALDECANAS_HOLES: HoleInfo[] = [
+  { hole: 1,  par: 4, strokeIndex: 7,  distance: 365 },
+  { hole: 2,  par: 5, strokeIndex: 13, distance: 485 },
+  { hole: 3,  par: 3, strokeIndex: 17, distance: 155 },
+  { hole: 4,  par: 4, strokeIndex: 3,  distance: 395 },
+  { hole: 5,  par: 4, strokeIndex: 11, distance: 350 },
+  { hole: 6,  par: 3, strokeIndex: 15, distance: 175 },
+  { hole: 7,  par: 5, strokeIndex: 5,  distance: 510 },
+  { hole: 8,  par: 4, strokeIndex: 1,  distance: 420 },
+  { hole: 9,  par: 4, strokeIndex: 9,  distance: 375 },
+  { hole: 10, par: 4, strokeIndex: 8,  distance: 380 },
+  { hole: 11, par: 3, strokeIndex: 16, distance: 165 },
+  { hole: 12, par: 5, strokeIndex: 12, distance: 495 },
+  { hole: 13, par: 4, strokeIndex: 2,  distance: 410 },
+  { hole: 14, par: 4, strokeIndex: 10, distance: 360 },
+  { hole: 15, par: 3, strokeIndex: 18, distance: 145 },
+  { hole: 16, par: 4, strokeIndex: 4,  distance: 400 },
+  { hole: 17, par: 5, strokeIndex: 14, distance: 505 },
+  { hole: 18, par: 4, strokeIndex: 6,  distance: 390 },
+];
+
+export const VALDECANAS_TOTAL_PAR = VALDECANAS_HOLES.reduce((sum, h) => sum + h.par, 0); // Should be 72
+
+// Helper to get score label relative to par
+export function getScoreLabel(strokes: number, par: number): string {
+  const diff = strokes - par;
+  if (diff <= -3) return 'Albatros';
+  if (diff === -2) return 'Eagle';
+  if (diff === -1) return 'Birdie';
+  if (diff === 0) return 'Par';
+  if (diff === 1) return 'Bogey';
+  if (diff === 2) return 'Doble Bogey';
+  if (diff >= 3) return `+${diff}`;
+  return '';
+}
+
+// Helper to get score color class
+export function getScoreColor(strokes: number, par: number): string {
+  const diff = strokes - par;
+  if (diff <= -2) return 'text-yellow-600 bg-yellow-100'; // Eagle or better
+  if (diff === -1) return 'text-green-600 bg-green-100'; // Birdie
+  if (diff === 0) return 'text-slate-600 bg-slate-100'; // Par
+  if (diff === 1) return 'text-orange-600 bg-orange-100'; // Bogey
+  if (diff >= 2) return 'text-red-600 bg-red-100'; // Double bogey or worse
+  return '';
+}
+
 // Challenge status labels
 export const CHALLENGE_STATUS_LABELS: Record<string, string> = {
   assigned: 'Asignado',
