@@ -456,78 +456,76 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
                         </SelectContent>
                       </Select>
                     </div>
+
+                    {/* Holes Played - Only for Matchplay */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold">Hoyos jugados</label>
+                      <Select
+                        value={formData.holes_played.toString()}
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, holes_played: parseInt(value) }))}
+                      >
+                        <SelectTrigger className="h-14 text-base">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({ length: 19 }, (_, i) => (
+                            <SelectItem key={i} value={i.toString()} className="text-base py-3">
+                              Hoyo {i}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Status / Result - Only for Matchplay */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold">Estado del Partido</label>
+                      <Select
+                        value={formData.status === 'completed' ? formData.result : formData.status}
+                        onValueChange={(value) => {
+                          if (value === 'in_progress') {
+                            setFormData(prev => ({ ...prev, status: 'in_progress', result: 'in_progress' }));
+                          } else {
+                            setFormData(prev => ({ 
+                              ...prev, 
+                              status: 'completed', 
+                              result: value as MatchResult
+                            }));
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="h-14 text-base">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="in_progress" className="text-base py-3">En juego</SelectItem>
+                          <SelectItem value="team_a_win" className="text-base py-3">
+                            Victoria {teamAPlayers.join(' & ')}
+                          </SelectItem>
+                          <SelectItem value="team_b_win" className="text-base py-3">
+                            Victoria {teamBPlayers.join(' & ')}
+                          </SelectItem>
+                          <SelectItem value="draw" className="text-base py-3">Empate (1/2 punto cada uno)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <Button 
+                      onClick={handleSaveScore} 
+                      className="w-full h-14 text-base font-semibold shadow-elevation-md"
+                      disabled={isSaving}
+                    >
+                      {isSaving ? (
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      ) : formData.status === 'completed' ? (
+                        <CheckCircle className="w-5 h-5 mr-2" />
+                      ) : (
+                        <Save className="w-5 h-5 mr-2" />
+                      )}
+                      {formData.status === 'completed' ? 'Finalizar Partido' : 'Guardar Marcador'}
+                    </Button>
                   </>
                 )}
-
-                {/* Holes Played */}
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold">Hoyos jugados</label>
-                  <Select
-                    value={formData.holes_played.toString()}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, holes_played: parseInt(value) }))}
-                  >
-                    <SelectTrigger className="h-14 text-base">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Array.from({ length: 19 }, (_, i) => (
-                        <SelectItem key={i} value={i.toString()} className="text-base py-3">
-                          Hoyo {i}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Status / Result */}
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold">Estado del Partido</label>
-                  <Select
-                    value={formData.status === 'completed' ? formData.result : formData.status}
-                    onValueChange={(value) => {
-                      if (value === 'in_progress') {
-                        setFormData(prev => ({ ...prev, status: 'in_progress', result: 'in_progress' }));
-                      } else {
-                        setFormData(prev => ({ 
-                          ...prev, 
-                          status: 'completed', 
-                          result: value as MatchResult
-                        }));
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="h-14 text-base">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="in_progress" className="text-base py-3">En juego</SelectItem>
-                      <SelectItem value="team_a_win" className="text-base py-3">
-                        Victoria {teamAPlayers.join(' & ')}
-                      </SelectItem>
-                      <SelectItem value="team_b_win" className="text-base py-3">
-                        Victoria {teamBPlayers.join(' & ')}
-                      </SelectItem>
-                      <SelectItem value="draw" className="text-base py-3">Empate (1/2 punto cada uno)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <Button 
-                  onClick={handleSaveScore} 
-                  className="w-full h-14 text-base font-semibold shadow-elevation-md"
-                  disabled={isSaving}
-                >
-                  {isSaving ? (
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  ) : formData.status === 'completed' ? (
-                    <CheckCircle className="w-5 h-5 mr-2" />
-                  ) : (
-                    <Save className="w-5 h-5 mr-2" />
-                  )}
-                  {formData.status === 'completed' ? 'Finalizar Partido' : 'Guardar Marcador'}
-                </Button>
-              </>
-            )}
           </CardContent>
         </Card>
       )}
