@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Trophy, Zap, Sparkles, Lock, Calendar } from 'lucide-react';
 
-// Fecha de apertura: Viernes 30 de enero 2026 a las 8:00 AM
-const UNLOCK_DATE = new Date('2026-01-30T08:00:00');
+// Fecha de apertura: Ya desbloqueado
+const UNLOCK_DATE = new Date('2026-01-01T00:00:00');
 
 function useCountdown(targetDate: Date) {
   const [timeLeft, setTimeLeft] = useState({
