@@ -11,6 +11,7 @@ import { PageContainer } from '@/components/layout/page-container';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Trophy, Users, Target, Beer, 
   Loader2, Flag, Zap 
@@ -64,9 +65,12 @@ export default function DashboardPage() {
   const opposingTeam = teams.find(t => t.id !== profile?.team_id);
   const isTeamJorge = profile?.team_id === TEAM_JORGE_ID;
   const teamColor = isTeamJorge ? '#DC2626' : '#2563EB';
+  const opposingTeamColor = isTeamJorge ? '#2563EB' : '#DC2626';
 
   // Todos los miembros de mi equipo (incluyéndome)
   const myTeamMembers = profiles.filter(p => p.team_id === profile?.team_id);
+  // Todos los miembros del equipo contrario
+  const opposingTeamMembers = profiles.filter(p => p.team_id === opposingTeam?.id);
 
   // Matches en progreso
   const liveMatches = matches.filter(m => m.status === 'in_progress');
@@ -117,75 +121,129 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      {/* Mi Equipo */}
+      {/* Equipos con Tabs */}
       <Card className="shadow-elevation-sm" style={{ borderColor: `${teamColor}30` }}>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg flex items-center gap-2" style={{ fontFamily: 'var(--font-display)' }}>
+        <CardHeader className="pb-0 pt-1 px-2">
+          <div className="flex items-center">
+            <CardTitle className="text-3xl font-bold flex items-center gap-2" style={{ fontFamily: 'var(--font-display)' }}>
               {userTeam?.logo_url ? (
-                <img src={userTeam.logo_url} alt="" className="w-6 h-6 object-contain" />
+                <img src={userTeam.logo_url} alt="" className="w-32 h-32 object-contain" />
               ) : (
-                <Users className="w-5 h-5" style={{ color: teamColor }} />
+                <Users className="w-16 h-16" style={{ color: teamColor }} />
               )}
-              Mi Equipo
+              Equipos
             </CardTitle>
-            <Badge 
-              variant="outline" 
-              style={{ borderColor: teamColor, color: teamColor }}
-            >
-              {userTeam?.name}
-            </Badge>
           </div>
         </CardHeader>
-        <CardContent className="space-y-2">
-          {myTeamMembers.map((member) => {
-            const isMe = member.id === profile?.id;
-            return (
-              <div 
-                key={member.id} 
-                className="flex items-start gap-3 p-3 rounded-xl transition-colors"
-                style={{ 
-                  backgroundColor: `${teamColor}${isMe ? '15' : '08'}`,
-                  boxShadow: isMe ? `0 0 0 2px ${teamColor}` : 'none'
-                }}
-              >
-                <PlayerAvatar
-                  avatarUrl={member.avatar_url}
-                  name={member.display_name}
-                  size="md"
-                  teamColor={teamColor}
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-semibold truncate">{member.display_name}</p>
-                    {isMe && (
-                      <Badge variant="default" className="text-xs shrink-0" style={{ backgroundColor: teamColor }}>
-                        Tú
-                      </Badge>
-                    )}
-                    {member.handicap && (
-                      <Badge variant="secondary" className="text-xs shrink-0">
-                        HCP {member.handicap}
-                      </Badge>
-                    )}
+        <CardContent className="px-2 pt-0 pb-1">
+          <Tabs defaultValue="my-team" className="w-full -mt-3">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="my-team" className="text-sm">
+                {userTeam?.name}
+              </TabsTrigger>
+              <TabsTrigger value="opposing-team" className="text-sm">
+                Los Perdedores
+              </TabsTrigger>
+            </TabsList>
+            
+            {/* Mi Equipo */}
+            <TabsContent value="my-team" className="mt-4 space-y-2">
+              {myTeamMembers.map((member) => {
+                const isMe = member.id === profile?.id;
+                return (
+                  <div 
+                    key={member.id} 
+                    className="flex items-start gap-3 p-3 rounded-xl transition-colors"
+                    style={{ 
+                      backgroundColor: `${teamColor}${isMe ? '15' : '08'}`,
+                      boxShadow: isMe ? `0 0 0 2px ${teamColor}` : 'none'
+                    }}
+                  >
+                    <PlayerAvatar
+                      avatarUrl={member.avatar_url}
+                      name={member.display_name}
+                      size="md"
+                      teamColor={teamColor}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-semibold truncate">{member.display_name}</p>
+                        {isMe && (
+                          <Badge variant="default" className="text-xs shrink-0" style={{ backgroundColor: teamColor }}>
+                            Tú
+                          </Badge>
+                        )}
+                        {member.handicap && (
+                          <Badge variant="secondary" className="text-xs shrink-0">
+                            HCP {member.handicap}
+                          </Badge>
+                        )}
+                      </div>
+                      {member.nickname && (
+                        <p className="text-xs text-muted-foreground">"{member.nickname}"</p>
+                      )}
+                      {member.bio && (
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2 italic">
+                          {member.bio}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  {member.nickname && (
-                    <p className="text-xs text-muted-foreground">"{member.nickname}"</p>
-                  )}
-                  {member.bio && (
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2 italic">
-                      {member.bio}
-                    </p>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-          {myTeamMembers.length === 0 && (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              No hay miembros del equipo
-            </p>
-          )}
+                );
+              })}
+              {myTeamMembers.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No hay miembros del equipo
+                </p>
+              )}
+            </TabsContent>
+
+            {/* Equipo Contrario - Los Perdedores */}
+            <TabsContent value="opposing-team" className="mt-4 space-y-2">
+              {opposingTeamMembers.map((member) => {
+                return (
+                  <div 
+                    key={member.id} 
+                    className="flex items-start gap-3 p-3 rounded-xl transition-colors"
+                    style={{ 
+                      backgroundColor: `${opposingTeamColor}08`,
+                      border: `1px solid ${opposingTeamColor}30`
+                    }}
+                  >
+                    <PlayerAvatar
+                      avatarUrl={member.avatar_url}
+                      name={member.display_name}
+                      size="md"
+                      teamColor={opposingTeamColor}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-semibold truncate">{member.display_name}</p>
+                        {member.handicap && (
+                          <Badge variant="secondary" className="text-xs shrink-0">
+                            HCP {member.handicap}
+                          </Badge>
+                        )}
+                      </div>
+                      {member.nickname && (
+                        <p className="text-xs text-muted-foreground">"{member.nickname}"</p>
+                      )}
+                      {member.bio && (
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2 italic">
+                          {member.bio}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+              {opposingTeamMembers.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No hay miembros del equipo contrario
+                </p>
+              )}
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 
