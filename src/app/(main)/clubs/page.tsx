@@ -175,29 +175,10 @@ export default function ClubsPage() {
               {/* Close Button */}
               <button 
                 onClick={() => setSelectedClub(null)}
-                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors z-10"
               >
                 <X className="w-5 h-5" />
               </button>
-
-              {/* Image Dots */}
-              {selectedClub.images.length > 1 && (
-                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-                  {selectedClub.images.map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveImageIndex(idx);
-                      }}
-                      className={cn(
-                        'h-1 rounded-full transition-all',
-                        idx === activeImageIndex ? 'bg-white w-6' : 'bg-white/40 w-1'
-                      )}
-                    />
-                  ))}
-                </div>
-              )}
 
               {/* Club Name */}
               <div className="absolute bottom-3 left-4 right-16">
@@ -214,7 +195,7 @@ export default function ClubsPage() {
             </div>
 
             {/* Modal Content */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-5" style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px) + 80px)' }}>
+            <div className="flex-1 overflow-y-auto p-4 space-y-5 pb-24">
               {/* Quick Stats */}
               <div className="grid grid-cols-4 gap-2">
                 <div className="text-center p-3 bg-muted/50 rounded-xl">
