@@ -162,7 +162,7 @@ export default function DashboardPage() {
                     <PlayerAvatar
                       avatarUrl={member.avatar_url}
                       name={member.display_name}
-                      size="md"
+                      size="lg"
                       teamColor={teamColor}
                     />
                     <div className="flex-1 min-w-0">
@@ -213,7 +213,7 @@ export default function DashboardPage() {
                     <PlayerAvatar
                       avatarUrl={member.avatar_url}
                       name={member.display_name}
-                      size="md"
+                      size="lg"
                       teamColor={opposingTeamColor}
                     />
                     <div className="flex-1 min-w-0">
