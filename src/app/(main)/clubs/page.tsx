@@ -78,17 +78,22 @@ export default function ClubsPage() {
       {/* Club Cards */}
       <div className="space-y-4">
         {clubs.map((club) => (
-          <Card 
+          <button
             key={club.id}
-            className={cn(
-              'overflow-hidden cursor-pointer transition-all hover:shadow-elevation-lg active:scale-[0.98]',
-              'border-2 hover:border-primary/30'
-            )}
+            type="button"
+            aria-label={`Ver detalles de ${club.name}`}
+            className="w-full text-left touch-manipulation"
             onClick={() => {
               setSelectedClub(club);
               setActiveImageIndex(0);
             }}
           >
+            <Card 
+              className={cn(
+                'overflow-hidden cursor-pointer transition-all hover:shadow-elevation-lg active:scale-[0.98]',
+                'border-2 hover:border-primary/30'
+              )}
+            >
             {/* Club Image Header */}
             <div className="relative h-40 overflow-hidden">
               <img 
@@ -149,16 +154,17 @@ export default function ClubsPage() {
                 <ChevronRight className="w-5 h-5 text-muted-foreground" />
               </div>
             </CardContent>
-          </Card>
+            </Card>
+          </button>
         ))}
       </div>
 
       {/* Club Detail Modal */}
       {selectedClub && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="bg-white w-full sm:max-w-lg sm:rounded-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-300">
+          <div className="bg-white w-full sm:max-w-lg sm:rounded-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-300 mb-[68px] sm:mb-0">
             {/* Modal Header with Image */}
-            <div className="relative h-52 flex-shrink-0">
+            <div className="relative h-36 sm:h-52 flex-shrink-0">
               <img 
                 src={selectedClub.images[activeImageIndex]} 
                 alt={selectedClub.name}
@@ -176,7 +182,7 @@ export default function ClubsPage() {
 
               {/* Image Dots */}
               {selectedClub.images.length > 1 && (
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
                   {selectedClub.images.map((_, idx) => (
                     <button
                       key={idx}
@@ -185,8 +191,8 @@ export default function ClubsPage() {
                         setActiveImageIndex(idx);
                       }}
                       className={cn(
-                        'w-2 h-2 rounded-full transition-all',
-                        idx === activeImageIndex ? 'bg-white w-4' : 'bg-white/50'
+                        'h-1 rounded-full transition-all',
+                        idx === activeImageIndex ? 'bg-white w-6' : 'bg-white/40 w-1'
                       )}
                     />
                   ))}
@@ -208,7 +214,7 @@ export default function ClubsPage() {
             </div>
 
             {/* Modal Content */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-5">
+            <div className="flex-1 overflow-y-auto p-4 space-y-5" style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px) + 80px)' }}>
               {/* Quick Stats */}
               <div className="grid grid-cols-4 gap-2">
                 <div className="text-center p-3 bg-muted/50 rounded-xl">
