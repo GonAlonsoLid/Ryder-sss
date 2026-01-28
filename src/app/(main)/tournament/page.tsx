@@ -444,9 +444,6 @@ export default function TournamentPage() {
                       {isCurrentRound && (
                         <Badge className="bg-emerald-600 text-white text-xs">AHORA</Badge>
                       )}
-                      {!isClickable && (
-                        <Badge variant="outline" className="text-xs text-slate-500">Próximamente</Badge>
-                      )}
                     </div>
                     <p className="text-sm text-muted-foreground">{clubInfo.name}</p>
                   </div>
@@ -459,7 +456,7 @@ export default function TournamentPage() {
                     ) : round.is_completed ? (
                       <Badge className="bg-slate-600">Finalizada</Badge>
                     ) : !isClickable ? (
-                      <Badge variant="outline" className="text-slate-400">Bloqueada</Badge>
+                      <Badge variant="outline" className="text-slate-500">Próximamente</Badge>
                     ) : (
                       <Badge variant="outline">{completed}/{roundMatches.length}</Badge>
                     )}
