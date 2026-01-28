@@ -12,11 +12,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Loader2, Beer, TrendingUp, Sparkles } from 'lucide-react';
+import { Loader2, Beer, TrendingUp, Sparkles, Lock, Calendar } from 'lucide-react';
 import { SSS_TOURNAMENT_ID, DRINK_EMOJIS, DRINK_LABELS, timeAgo, DRINK_POINTS, TEAM_JORGE_ID } from '@/lib/constants';
 import type { Drink, Profile, DrinkType } from '@/types/database';
 
 const DRINK_TYPES: DrinkType[] = ['cerveza', 'chupito', 'copa', 'hidalgo'];
+
+// Bloqueo hasta viernes 30 Enero 2026 a las 19:00 (antes del Ryder)
+const DRINKS_UNLOCK_DATE = new Date('2026-01-30T19:00:00');
 
 interface DrinkWithProfile extends Drink {
   profile?: Profile;
@@ -42,6 +45,8 @@ export default function DrinksPage() {
   const myTeamScore = isTeamJorge ? pimentonas : tabaqueras;
   const myTeamName = isTeamJorge ? 'Pimentonas' : 'Tabaqueras';
   const myTeamColor = isTeamJorge ? '#DC2626' : '#2563EB';
+
+  const isDrinksLocked = new Date() < DRINKS_UNLOCK_DATE;
 
   const fetchDrinks = useCallback(async () => {
     if (!player?.id) return;
@@ -97,7 +102,7 @@ export default function DrinksPage() {
   const isLoading = authLoading || tournamentLoading || scoresLoading;
 
   const handleAddDrink = async (drinkType: string) => {
-    if (!player?.id) return;
+    if (!player?.id || isDrinksLocked) return;
     setIsSaving(drinkType);
 
     const { error } = await supabase
@@ -184,14 +189,25 @@ export default function DrinksPage() {
       </Card>
 
       {/* Quick Add - BOTONES GRANDES */}
-      <Card className="bg-gradient-to-br from-amber-500/10 via-background to-amber-500/5 border-amber-500/30 shadow-elevation-lg">
+      <Card className={`bg-gradient-to-br from-amber-500/10 via-background to-amber-500/5 border-amber-500/30 shadow-elevation-lg ${isDrinksLocked ? 'opacity-90' : ''}`}>
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center gap-2" style={{ fontFamily: 'var(--font-display)' }}>
-            <Sparkles className="w-5 h-5 text-amber-500" />
+            {isDrinksLocked ? (
+              <Lock className="w-5 h-5 text-slate-500" />
+            ) : (
+              <Sparkles className="w-5 h-5 text-amber-500" />
+            )}
             Registrar Consumición
           </CardTitle>
           <p className="text-sm text-muted-foreground mt-1">
-            Cada consumición suma puntos al marcador
+            {isDrinksLocked ? (
+              <span className="inline-flex items-center gap-2 text-slate-500">
+                <Calendar className="w-4 h-4" />
+                Bloqueado hasta el viernes 30 Enero a las 19:00
+              </span>
+            ) : (
+              'Cada consumición suma puntos al marcador'
+            )}
           </p>
         </CardHeader>
         <CardContent>
@@ -200,9 +216,13 @@ export default function DrinksPage() {
               <Button
                 key={type}
                 variant="outline"
-                className="h-28 flex flex-col gap-2 hover:bg-amber-500/15 hover:border-amber-500/60 border-2 rounded-2xl transition-all duration-200 active:scale-95 relative overflow-hidden"
+                className={`h-28 flex flex-col gap-2 border-2 rounded-2xl transition-all duration-200 relative overflow-hidden ${
+                  isDrinksLocked 
+                    ? 'opacity-60 cursor-not-allowed hover:bg-transparent hover:border-slate-200' 
+                    : 'hover:bg-amber-500/15 hover:border-amber-500/60 active:scale-95'
+                }`}
                 onClick={() => handleAddDrink(type)}
-                disabled={isSaving === type}
+                disabled={isDrinksLocked || isSaving === type}
               >
                 {isSaving === type ? (
                   <Loader2 className="w-8 h-8 animate-spin" />
@@ -211,7 +231,7 @@ export default function DrinksPage() {
                     <span className="text-4xl">{DRINK_EMOJIS[type]}</span>
                     <span className="text-sm font-medium">{DRINK_LABELS[type]}</span>
                     <span className="text-xs text-amber-600 font-bold">+{DRINK_POINTS[type]} pts</span>
-                    {myDrinks[type] > 0 && (
+                    {myDrinks[type] > 0 && !isDrinksLocked && (
                       <Badge 
                         className="absolute top-2 right-2 bg-amber-500 text-white text-xs px-2"
                       >
