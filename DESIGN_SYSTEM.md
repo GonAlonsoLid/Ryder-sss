@@ -207,7 +207,7 @@ font-family: 'Inter', sans-serif;
 ├─────────────────────────────────────┤
 │                                     │
 │         R1 - Scramble               │
-│     Talayuela Golf Club             │
+│   Golf Isla de Valdecañas           │
 │                                     │
 │  ┌───────────────────────────────┐ │
 │  │                               │ │

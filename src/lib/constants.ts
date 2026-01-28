@@ -77,10 +77,10 @@ export const ROUND_FORMAT_DESCRIPTIONS: Record<string, string> = {
 };
 
 // =====================
-// COURSE DATA - VALDECAÑAS (Singles - Sunday)
+// COURSE DATA - VALDECAÑAS (Ambos días: Scramble + Singles)
 // =====================
-// Par: 72 (typical 18-hole course)
-// Adjust these values if you have the actual scorecard
+// Par: 72 (18 hoyos)
+// Se juega el sábado 31 (Scramble) y domingo 1 (Singles)
 
 export interface HoleInfo {
   hole: number;

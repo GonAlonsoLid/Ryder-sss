@@ -8,6 +8,7 @@ import { Clock, Play, CheckCircle } from 'lucide-react';
 
 interface PlayerInfo {
   name: string;
+  nickname?: string | null;
   handicap?: number | null;
 }
 
@@ -103,39 +104,53 @@ export function MatchCard({
 
           <div className="flex items-center justify-between">
             <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2">
                 <div 
-                  className="w-3 h-3 rounded-full"
+                  className="w-3 h-3 rounded-full flex-shrink-0 self-start mt-1"
                   style={{ backgroundColor: teamAColor }}
                 />
-                <div>
-                  <p className="text-sm font-medium">{teamAPlayers.map(p => p.name).join(' & ')}</p>
+                <div className="min-w-0">
+                  {teamAPlayers.map((p, i) => (
+                    <div key={i} className={i > 0 ? 'mt-1' : ''}>
+                      <p className="text-sm font-semibold truncate">{p.name}</p>
+                      {p.nickname && (
+                        <p className="text-xs text-muted-foreground truncate">"{p.nickname}"</p>
+                      )}
+                    </div>
+                  ))}
                   {!compact && teamAPlayers.some(p => p.handicap) && (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground mt-1">
                       HCP: {teamAPlayers.map(p => p.handicap || '-').join(' / ')}
                     </p>
                   )}
+                  <p className="text-xs text-muted-foreground mt-1">{teamAName}</p>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground ml-5">{teamAName}</p>
             </div>
-            <p className="text-muted-foreground mx-2">vs</p>
-            <div className="flex-1 text-right">
-              <div className="flex items-center justify-end gap-2 mb-1">
-                <div className="text-right">
-                  <p className="text-sm font-medium">{teamBPlayers.map(p => p.name).join(' & ')}</p>
+            <p className="text-muted-foreground mx-2 flex-shrink-0">vs</p>
+            <div className="flex-1">
+              <div className="flex items-center justify-end gap-2">
+                <div className="text-right min-w-0">
+                  {teamBPlayers.map((p, i) => (
+                    <div key={i} className={i > 0 ? 'mt-1' : ''}>
+                      <p className="text-sm font-semibold truncate">{p.name}</p>
+                      {p.nickname && (
+                        <p className="text-xs text-muted-foreground truncate">"{p.nickname}"</p>
+                      )}
+                    </div>
+                  ))}
                   {!compact && teamBPlayers.some(p => p.handicap) && (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground mt-1">
                       HCP: {teamBPlayers.map(p => p.handicap || '-').join(' / ')}
                     </p>
                   )}
+                  <p className="text-xs text-muted-foreground mt-1">{teamBName}</p>
                 </div>
                 <div 
-                  className="w-3 h-3 rounded-full"
+                  className="w-3 h-3 rounded-full flex-shrink-0 self-start mt-1"
                   style={{ backgroundColor: teamBColor }}
                 />
               </div>
-              <p className="text-xs text-muted-foreground mr-5">{teamBName}</p>
             </div>
           </div>
         </CardContent>

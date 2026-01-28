@@ -95,11 +95,22 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
     match?.team_a_players?.includes(player?.id || '') || 
     match?.team_b_players?.includes(player?.id || '');
 
+  const getPlayerInfo = (playerIds: string[]): { name: string; nickname: string | null }[] => {
+    if (!playerIds || playerIds.length === 0) return [{ name: 'Sin asignar', nickname: null }];
+    return playerIds.map(id => {
+      const p = profiles.find(pr => pr.id === id);
+      return {
+        name: p?.display_name || 'Desconocido',
+        nickname: p?.nickname || null,
+      };
+    });
+  };
+
   const getPlayerNames = (playerIds: string[]): string[] => {
     if (!playerIds || playerIds.length === 0) return ['Sin asignar'];
     return playerIds.map(id => {
-      const player = profiles.find(p => p.id === id);
-      return player?.nickname || player?.display_name || 'Desconocido';
+      const p = profiles.find(pr => pr.id === id);
+      return p?.display_name || 'Desconocido';
     });
   };
 
@@ -251,6 +262,8 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
 
   const teamA = teams.find(t => t.id === match.team_a_id);
   const teamB = teams.find(t => t.id === match.team_b_id);
+  const teamAPlayersInfo = getPlayerInfo(match.team_a_players);
+  const teamBPlayersInfo = getPlayerInfo(match.team_b_players);
   const teamAPlayers = getPlayerNames(match.team_a_players);
   const teamBPlayers = getPlayerNames(match.team_b_players);
 
@@ -313,7 +326,7 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
             {/* Team A */}
             <div className="flex-1 text-center">
               <div 
-                className="w-12 h-12 mx-auto rounded-xl flex items-center justify-center mb-2"
+                className="w-12 h-12 mx-auto rounded-xl flex items-center justify-center mb-3"
                 style={{ 
                   backgroundColor: teamA?.id === TEAM_JORGE_ID ? '#DC262620' : '#2563EB20',
                   border: `2px solid ${teamA?.id === TEAM_JORGE_ID ? '#DC2626' : '#2563EB'}`
@@ -323,10 +336,17 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
                   {match.team_a_points}
                 </span>
               </div>
-              {teamAPlayers.map((name, i) => (
-                <p key={i} className="text-sm font-medium">{name}</p>
+              {teamAPlayersInfo.map((player, i) => (
+                <div key={i} className={i > 0 ? 'mt-2' : ''}>
+                  <p className="text-sm font-semibold">{player.name}</p>
+                  {player.nickname && (
+                    <p className="text-xs text-muted-foreground">"{player.nickname}"</p>
+                  )}
+                </div>
               ))}
-              <p className="text-xs text-muted-foreground mt-1">{teamA?.name}</p>
+              <p className="text-xs text-muted-foreground mt-2 font-medium" style={{ color: teamA?.id === TEAM_JORGE_ID ? '#DC2626' : '#2563EB' }}>
+                {teamA?.name}
+              </p>
             </div>
 
             <div className="px-4">
@@ -336,7 +356,7 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
             {/* Team B */}
             <div className="flex-1 text-center">
               <div 
-                className="w-12 h-12 mx-auto rounded-xl flex items-center justify-center mb-2"
+                className="w-12 h-12 mx-auto rounded-xl flex items-center justify-center mb-3"
                 style={{ 
                   backgroundColor: teamB?.id === TEAM_JORGE_ID ? '#DC262620' : '#2563EB20',
                   border: `2px solid ${teamB?.id === TEAM_JORGE_ID ? '#DC2626' : '#2563EB'}`
@@ -346,10 +366,17 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
                   {match.team_b_points}
                 </span>
               </div>
-              {teamBPlayers.map((name, i) => (
-                <p key={i} className="text-sm font-medium">{name}</p>
+              {teamBPlayersInfo.map((player, i) => (
+                <div key={i} className={i > 0 ? 'mt-2' : ''}>
+                  <p className="text-sm font-semibold">{player.name}</p>
+                  {player.nickname && (
+                    <p className="text-xs text-muted-foreground">"{player.nickname}"</p>
+                  )}
+                </div>
               ))}
-              <p className="text-xs text-muted-foreground mt-1">{teamB?.name}</p>
+              <p className="text-xs text-muted-foreground mt-2 font-medium" style={{ color: teamB?.id === TEAM_JORGE_ID ? '#DC2626' : '#2563EB' }}>
+                {teamB?.name}
+              </p>
             </div>
           </div>
           </CardContent>

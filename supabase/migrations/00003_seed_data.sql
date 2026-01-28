@@ -13,7 +13,7 @@ VALUES (
     'SSS Ryder Weekend',
     '2026-01-31',
     '2026-02-01',
-    'La Vera',
+    'Valdecañas',
     true
 );
 

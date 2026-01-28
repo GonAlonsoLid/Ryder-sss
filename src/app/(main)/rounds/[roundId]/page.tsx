@@ -49,14 +49,15 @@ export default function RoundPage({ params }: { params: Promise<{ roundId: strin
     }
   });
 
-  const getPlayerNames = (playerIds: string[]): string => {
-    if (!playerIds || playerIds.length === 0) return 'Sin asignar';
-    return playerIds
-      .map(id => {
-        const player = profiles.find(p => p.id === id);
-        return player?.nickname || player?.display_name || 'Desconocido';
-      })
-      .join(' & ');
+  const getPlayerInfo = (playerIds: string[]): { name: string; nickname: string | null }[] => {
+    if (!playerIds || playerIds.length === 0) return [{ name: 'Sin asignar', nickname: null }];
+    return playerIds.map(id => {
+      const player = profiles.find(p => p.id === id);
+      return {
+        name: player?.display_name || 'Desconocido',
+        nickname: player?.nickname || null,
+      };
+    });
   };
 
   const getPlayersHandicap = (playerIds: string[]): number => {
@@ -172,6 +173,8 @@ export default function RoundPage({ params }: { params: Promise<{ roundId: strin
           const strokesInfo = getStrokesInfo(match.team_a_players, match.team_b_players);
           const hcpA = getPlayersHandicap(match.team_a_players);
           const hcpB = getPlayersHandicap(match.team_b_players);
+          const playersA = getPlayerInfo(match.team_a_players);
+          const playersB = getPlayerInfo(match.team_b_players);
 
           return (
             <Link key={match.id} href={`/matches/${match.id}`}>
@@ -197,8 +200,8 @@ export default function RoundPage({ params }: { params: Promise<{ roundId: strin
                     <div className="mb-3 text-center">
                       <Badge variant="outline" className="text-xs bg-amber-50 border-amber-200 text-amber-700">
                         {strokesInfo.receiver === 'A' 
-                          ? `${getPlayerNames(match.team_a_players)} recibe ${strokesInfo.strokes} golpes`
-                          : `${getPlayerNames(match.team_b_players)} recibe ${strokesInfo.strokes} golpes`
+                          ? `${playersA.map(p => p.name).join(' & ')} recibe ${strokesInfo.strokes} golpes`
+                          : `${playersB.map(p => p.name).join(' & ')} recibe ${strokesInfo.strokes} golpes`
                         }
                       </Badge>
                     </div>
@@ -207,24 +210,27 @@ export default function RoundPage({ params }: { params: Promise<{ roundId: strin
                   <div className="flex items-center justify-between">
                     {/* Team A */}
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-2">
                         <div 
-                          className="w-3 h-3 rounded-full"
+                          className="w-3 h-3 rounded-full flex-shrink-0 self-start mt-1"
                           style={{ backgroundColor: teamA?.id === TEAM_JORGE_ID ? '#DC2626' : '#2563EB' }}
                         />
-                        <div>
-                          <span className="text-sm font-medium truncate block">
-                            {getPlayerNames(match.team_a_players)}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            HCP {hcpA}
-                          </span>
+                        <div className="min-w-0">
+                          {playersA.map((player, i) => (
+                            <div key={i} className={i > 0 ? 'mt-1' : ''}>
+                              <p className="text-sm font-semibold truncate">{player.name}</p>
+                              {player.nickname && (
+                                <p className="text-xs text-muted-foreground truncate">"{player.nickname}"</p>
+                              )}
+                            </div>
+                          ))}
+                          <p className="text-xs text-muted-foreground mt-1">HCP {hcpA}</p>
                         </div>
                       </div>
                     </div>
 
                     {/* Score */}
-                    <div className="px-4 text-center">
+                    <div className="px-4 text-center flex-shrink-0">
                       <p className={`text-xl font-mono font-bold ${
                         isLive ? 'text-primary' : ''
                       }`}>
@@ -238,18 +244,21 @@ export default function RoundPage({ params }: { params: Promise<{ roundId: strin
                     </div>
 
                     {/* Team B */}
-                    <div className="flex-1 text-right">
-                      <div className="flex items-center gap-2 justify-end mb-1">
-                        <div className="text-right">
-                          <span className="text-sm font-medium truncate block">
-                            {getPlayerNames(match.team_b_players)}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            HCP {hcpB}
-                          </span>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 justify-end">
+                        <div className="text-right min-w-0">
+                          {playersB.map((player, i) => (
+                            <div key={i} className={i > 0 ? 'mt-1' : ''}>
+                              <p className="text-sm font-semibold truncate">{player.name}</p>
+                              {player.nickname && (
+                                <p className="text-xs text-muted-foreground truncate">"{player.nickname}"</p>
+                              )}
+                            </div>
+                          ))}
+                          <p className="text-xs text-muted-foreground mt-1">HCP {hcpB}</p>
                         </div>
                         <div 
-                          className="w-3 h-3 rounded-full"
+                          className="w-3 h-3 rounded-full flex-shrink-0 self-start mt-1"
                           style={{ backgroundColor: teamB?.id === TEAM_JORGE_ID ? '#DC2626' : '#2563EB' }}
                         />
                       </div>

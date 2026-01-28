@@ -29,13 +29,13 @@ const CLUB_INFO: Record<string, {
   teeTime: string;
 }> = {
   'scramble': {
-    name: 'Talayuela Golf Club',
-    location: 'Talayuela, Cáceres',
-    image: 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?w=800&h=400&fit=crop',
+    name: 'Golf Isla de Valdecañas',
+    location: 'El Gordo, Cáceres',
+    image: 'https://images.unsplash.com/photo-1592919505780-303950717480?w=800&h=400&fit=crop',
     holes: 18,
     par: 72,
-    length: '6.200m',
-    description: 'Campo técnico con calles estrechas rodeadas de encinas. Greens rápidos y bien defendidos.',
+    length: '6.400m',
+    description: 'Espectacular campo en una isla privada. Vistas al embalse y diseño championship.',
     weather: { temp: 14, condition: 'sunny', wind: 8 },
     teeTime: '09:00',
   },
@@ -426,41 +426,57 @@ export default function TournamentPage() {
           const clubKey = round.name.toLowerCase().includes('scramble') ? 'scramble' : 'singles';
           const clubInfo = CLUB_INFO[clubKey];
           const isCurrentRound = currentRound?.id === round.id && (phase === 'saturday' || phase === 'sunday');
+          
+          // Solo permitir click si el torneo ya ha comenzado
+          const isClickable = phase !== 'before';
 
-          return (
-            <Link key={round.id} href={`/rounds/${round.id}`}>
-              <Card className={`hover:bg-slate-50 transition-colors ${isCurrentRound ? 'border-2 border-emerald-500 bg-emerald-50/50' : ''}`}>
-                <CardContent className="py-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 shadow-sm">
-                      <img src={clubInfo.image} alt="" className="w-full h-full object-cover" />
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-semibold">{round.name}</h4>
-                        {isCurrentRound && (
-                          <Badge className="bg-emerald-600 text-white text-xs">AHORA</Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground">{clubInfo.name}</p>
-                    </div>
-
-                    <div className="text-right">
-                      {live > 0 ? (
-                        <Badge variant="destructive" className="animate-pulse">
-                          {live} LIVE
-                        </Badge>
-                      ) : round.is_completed ? (
-                        <Badge className="bg-slate-600">Finalizada</Badge>
-                      ) : (
-                        <Badge variant="outline">{completed}/{roundMatches.length}</Badge>
+          const cardContent = (
+            <Card className={`transition-colors ${isCurrentRound ? 'border-2 border-emerald-500 bg-emerald-50/50' : ''} ${isClickable ? 'hover:bg-slate-50 cursor-pointer' : 'opacity-70 cursor-not-allowed'}`}>
+              <CardContent className="py-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 shadow-sm">
+                    <img src={clubInfo.image} alt="" className="w-full h-full object-cover" />
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-semibold">{round.name}</h4>
+                      {isCurrentRound && (
+                        <Badge className="bg-emerald-600 text-white text-xs">AHORA</Badge>
+                      )}
+                      {!isClickable && (
+                        <Badge variant="outline" className="text-xs text-slate-500">Próximamente</Badge>
                       )}
                     </div>
+                    <p className="text-sm text-muted-foreground">{clubInfo.name}</p>
                   </div>
-                </CardContent>
-              </Card>
+
+                  <div className="text-right">
+                    {live > 0 ? (
+                      <Badge variant="destructive" className="animate-pulse">
+                        {live} LIVE
+                      </Badge>
+                    ) : round.is_completed ? (
+                      <Badge className="bg-slate-600">Finalizada</Badge>
+                    ) : !isClickable ? (
+                      <Badge variant="outline" className="text-slate-400">Bloqueada</Badge>
+                    ) : (
+                      <Badge variant="outline">{completed}/{roundMatches.length}</Badge>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+
+          return isClickable ? (
+            <Link key={round.id} href={`/rounds/${round.id}`}>
+              {cardContent}
             </Link>
+          ) : (
+            <div key={round.id}>
+              {cardContent}
+            </div>
           );
         })}
       </div>

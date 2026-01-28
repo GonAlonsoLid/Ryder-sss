@@ -208,7 +208,7 @@ src/
 
 ### Rondas
 
-1. **R1: Scramble** (Sábado) - Talayuela - Todos los jugadores del equipo juegan desde la mejor posición
+1. **R1: Scramble** (Sábado) - Valdecañas - Todos los jugadores del equipo juegan desde la mejor posición
 2. **R2: Singles 1v1** (Domingo) - Valdecañas - Enfrentamientos individuales
 
 ### Puntuación

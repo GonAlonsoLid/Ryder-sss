@@ -360,7 +360,7 @@ export default function SettingsPage() {
       </Button>
 
       <p className="text-xs text-center text-muted-foreground pt-4">
-        SSS Ryder v1.0.0 • Hecho con 💚 para los SSS
+        SSS Ryder v1.0.0 • Hecho con RUINA para los SSS
       </p>
     </PageContainer>
   );

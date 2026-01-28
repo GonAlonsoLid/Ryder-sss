@@ -57,22 +57,24 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 overflow-hidden relative">
-      {/* Animated Background */}
-      <div className="absolute inset-0">
+    <div className="min-h-screen overflow-hidden relative">
+      {/* Background Image - Valdecañas Golf Course */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=1920&q=80')`,
+        }}
+      />
+      
+      {/* Dark Overlay with Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/70 to-slate-900/90" />
+      
+      {/* Animated Accent Effects */}
+      <div className="absolute inset-0 pointer-events-none">
         {/* Gradient Orbs */}
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-red-500/10 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-yellow-400/10 rounded-full blur-[80px]" />
-        
-        {/* Subtle Pattern */}
-        <div 
-          className="absolute inset-0 opacity-[0.02]"
-          style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, rgba(0,0,0,0.15) 1px, transparent 0)`,
-            backgroundSize: '40px 40px'
-          }}
-        />
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-red-500/20 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-blue-500/20 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-amber-400/15 rounded-full blur-[80px]" />
       </div>
 
       {/* Main Content */}
@@ -93,21 +95,21 @@ export default function LandingPage() {
         {/* Epic Title */}
         <div className="text-center mb-2">
           <div className="flex items-center justify-center gap-3 mb-3">
-            <Sparkles className="w-5 h-5 text-amber-500 animate-pulse" />
-            <span className="text-amber-600 text-sm font-bold tracking-[0.3em] uppercase">
+            <Sparkles className="w-5 h-5 text-amber-400 animate-pulse" />
+            <span className="text-amber-400 text-sm font-bold tracking-[0.3em] uppercase">
               1ª Edición
             </span>
-            <Sparkles className="w-5 h-5 text-amber-500 animate-pulse" />
+            <Sparkles className="w-5 h-5 text-amber-400 animate-pulse" />
           </div>
           
           <h1 
-            className="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-slate-900 via-slate-800 to-slate-600 tracking-tighter mb-3"
+            className="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-100 to-slate-300 tracking-tighter mb-3 drop-shadow-2xl"
             style={{ fontFamily: 'var(--font-display)' }}
           >
             RYDER CUP
           </h1>
           
-          <p className="text-slate-500 text-lg tracking-wide font-medium">
+          <p className="text-slate-300 text-lg tracking-wide font-medium">
             La Vera • Enero 2026
           </p>
         </div>
@@ -127,10 +129,10 @@ export default function LandingPage() {
                   />
                 </div>
               </div>
-              <p className="mt-4 text-lg md:text-xl font-black text-red-600 tracking-wide" style={{ fontFamily: 'var(--font-display)' }}>
+              <p className="mt-4 text-lg md:text-xl font-black text-red-400 tracking-wide" style={{ fontFamily: 'var(--font-display)' }}>
                 PIMENTONAS
               </p>
-              <p className="text-xs text-slate-500 mt-1">Capitán: Yago</p>
+              <p className="text-xs text-slate-400 mt-1">Capitán: Yago</p>
             </div>
 
             {/* VS Badge */}
@@ -155,10 +157,10 @@ export default function LandingPage() {
                   />
                 </div>
               </div>
-              <p className="mt-4 text-lg md:text-xl font-black text-blue-600 tracking-wide" style={{ fontFamily: 'var(--font-display)' }}>
+              <p className="mt-4 text-lg md:text-xl font-black text-blue-400 tracking-wide" style={{ fontFamily: 'var(--font-display)' }}>
                 TABAQUERAS
               </p>
-              <p className="text-xs text-slate-500 mt-1">Capitán: Jorge</p>
+              <p className="text-xs text-slate-400 mt-1">Capitán: Jorge</p>
             </div>
           </div>
         </div>
@@ -170,10 +172,10 @@ export default function LandingPage() {
               {/* Glow effect */}
               <div className="absolute inset-0 bg-gradient-to-r from-amber-400/20 via-red-400/20 to-blue-400/20 rounded-3xl blur-2xl" />
               
-              <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl border border-slate-200 shadow-2xl p-6 md:p-8">
+              <div className="relative bg-slate-900/60 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl p-6 md:p-8">
                 <div className="flex items-center justify-center gap-2 mb-4">
-                  <Lock className="w-4 h-4 text-slate-600" />
-                  <p className="text-sm font-bold text-slate-600 tracking-wider uppercase">
+                  <Lock className="w-4 h-4 text-slate-300" />
+                  <p className="text-sm font-bold text-slate-300 tracking-wider uppercase">
                     Comienza en
                   </p>
                 </div>
@@ -182,38 +184,38 @@ export default function LandingPage() {
                 <div className="grid grid-cols-4 gap-2 md:gap-4">
                   <div className="text-center">
                     <div className="relative">
-                      <div className="absolute inset-0 bg-slate-900/5 rounded-2xl blur-lg" />
-                      <div className="relative bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-3 md:p-4 shadow-xl">
+                      <div className="absolute inset-0 bg-white/10 rounded-2xl blur-lg" />
+                      <div className="relative bg-gradient-to-br from-slate-700 to-slate-800 rounded-2xl p-3 md:p-4 shadow-xl border border-white/10">
                         <span className="text-3xl md:text-5xl font-black text-white tabular-nums" style={{ fontFamily: 'var(--font-display)' }}>
                           {String(days).padStart(2, '0')}
                         </span>
                       </div>
                     </div>
-                    <p className="mt-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Días</p>
+                    <p className="mt-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Días</p>
                   </div>
                   
                   <div className="text-center">
                     <div className="relative">
-                      <div className="absolute inset-0 bg-slate-900/5 rounded-2xl blur-lg" />
-                      <div className="relative bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-3 md:p-4 shadow-xl">
+                      <div className="absolute inset-0 bg-white/10 rounded-2xl blur-lg" />
+                      <div className="relative bg-gradient-to-br from-slate-700 to-slate-800 rounded-2xl p-3 md:p-4 shadow-xl border border-white/10">
                         <span className="text-3xl md:text-5xl font-black text-white tabular-nums" style={{ fontFamily: 'var(--font-display)' }}>
                           {String(hours).padStart(2, '0')}
                         </span>
                       </div>
                     </div>
-                    <p className="mt-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Horas</p>
+                    <p className="mt-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Horas</p>
                   </div>
                   
                   <div className="text-center">
                     <div className="relative">
-                      <div className="absolute inset-0 bg-slate-900/5 rounded-2xl blur-lg" />
-                      <div className="relative bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-3 md:p-4 shadow-xl">
+                      <div className="absolute inset-0 bg-white/10 rounded-2xl blur-lg" />
+                      <div className="relative bg-gradient-to-br from-slate-700 to-slate-800 rounded-2xl p-3 md:p-4 shadow-xl border border-white/10">
                         <span className="text-3xl md:text-5xl font-black text-white tabular-nums" style={{ fontFamily: 'var(--font-display)' }}>
                           {String(minutes).padStart(2, '0')}
                         </span>
                       </div>
                     </div>
-                    <p className="mt-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Min</p>
+                    <p className="mt-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Min</p>
                   </div>
                   
                   <div className="text-center">
@@ -229,7 +231,7 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                <div className="mt-6 flex items-center justify-center gap-2 text-slate-500">
+                <div className="mt-6 flex items-center justify-center gap-2 text-slate-400">
                   <Calendar className="w-4 h-4" />
                   <p className="text-sm font-medium">
                     Viernes 30 de Enero • 08:00
@@ -263,8 +265,8 @@ export default function LandingPage() {
             </Button>
           ) : (
             <div className="relative">
-              <div className="absolute inset-0 bg-slate-300/50 rounded-2xl blur-lg" />
-              <div className="relative bg-gradient-to-r from-slate-200 to-slate-300 text-slate-500 h-16 px-12 rounded-2xl flex items-center justify-center gap-3 font-bold text-lg shadow-inner cursor-not-allowed ring-4 ring-slate-100">
+              <div className="absolute inset-0 bg-slate-600/50 rounded-2xl blur-lg" />
+              <div className="relative bg-gradient-to-r from-slate-700 to-slate-600 text-slate-400 h-16 px-12 rounded-2xl flex items-center justify-center gap-3 font-bold text-lg shadow-inner cursor-not-allowed ring-4 ring-slate-500/30 border border-slate-500/30">
                 <Lock className="w-5 h-5" />
                 BLOQUEADO
               </div>
@@ -273,20 +275,20 @@ export default function LandingPage() {
         )}
 
         {/* Footer */}
-        <p className="mt-10 text-xs text-slate-400 tracking-widest uppercase font-medium">
+        <p className="mt-10 text-xs text-slate-500 tracking-widest uppercase font-medium">
           {isUnlocked ? 'Solo para miembros del grupo SSS' : 'Prepárate... Se acerca la batalla'}
         </p>
 
         {/* Floating Elements */}
-        <div className="absolute bottom-8 left-8 text-slate-400 text-xs hidden md:flex flex-col gap-1.5">
+        <div className="absolute bottom-8 left-8 text-slate-500 text-xs hidden md:flex flex-col gap-1.5">
           <p>10 jugadores</p>
-          <p>2 campos</p>
+          <p>1 campo</p>
           <p>1 campeón</p>
         </div>
         
-        <div className="absolute bottom-8 right-8 text-slate-400 text-xs text-right hidden md:flex flex-col gap-1.5">
-          <p>Talayuela Golf Club</p>
-          <p>Isla de Valdecañas</p>
+        <div className="absolute bottom-8 right-8 text-slate-500 text-xs text-right hidden md:flex flex-col gap-1.5">
+          <p>Golf Isla de Valdecañas</p>
+          <p>El Gordo, Cáceres</p>
         </div>
       </div>
     </div>

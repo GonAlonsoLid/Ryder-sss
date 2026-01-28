@@ -85,8 +85,11 @@ export default function DashboardPage() {
             />
             <div className="flex-1 min-w-0">
               <p className="text-sm text-muted-foreground">Bienvenido,</p>
-              <h1 className="text-2xl font-bold truncate">{profile?.nickname || profile?.display_name}</h1>
-              <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <h1 className="text-2xl font-bold truncate">{profile?.display_name}</h1>
+              {profile?.nickname && (
+                <p className="text-sm text-muted-foreground truncate">"{profile.nickname}"</p>
+              )}
+              <div className="flex items-center gap-2 mt-2 flex-wrap">
                 <Badge 
                   variant="outline" 
                   className="text-xs"
@@ -229,11 +232,19 @@ export default function DashboardPage() {
               const teamB = teams.find(t => t.id === match.team_b_id);
               const teamAPlayers = (match.team_a_players || []).map(id => {
                 const p = profiles.find(pr => pr.id === id);
-                return { name: p?.nickname || p?.display_name || 'Sin asignar', handicap: p?.handicap };
+                return { 
+                  name: p?.display_name || 'Sin asignar', 
+                  nickname: p?.nickname || null,
+                  handicap: p?.handicap 
+                };
               });
               const teamBPlayers = (match.team_b_players || []).map(id => {
                 const p = profiles.find(pr => pr.id === id);
-                return { name: p?.nickname || p?.display_name || 'Sin asignar', handicap: p?.handicap };
+                return { 
+                  name: p?.display_name || 'Sin asignar', 
+                  nickname: p?.nickname || null,
+                  handicap: p?.handicap 
+                };
               });
 
               return (
