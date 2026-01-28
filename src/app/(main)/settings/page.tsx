@@ -336,17 +336,20 @@ export default function SettingsPage() {
 
       {/* Admin Link */}
       {isAdmin && (
-        <Link href="/admin">
-          <Card className="hover:bg-muted/50 transition-colors cursor-pointer border-amber-500/30 bg-amber-500/5">
-            <CardContent className="flex items-center gap-3 py-4">
-              <Shield className="w-5 h-5 text-amber-500" />
-              <div>
-                <p className="font-medium">Panel de Administración</p>
-                <p className="text-xs text-muted-foreground">Gestionar torneo, rondas y trofeos</p>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+        <>
+          <Link href="/admin">
+            <Card className="hover:bg-muted/50 transition-colors cursor-pointer border-amber-500/30 bg-amber-500/5">
+              <CardContent className="flex items-center gap-3 py-4">
+                <Shield className="w-5 h-5 text-amber-500" />
+                <div>
+                  <p className="font-medium">Panel de Administración</p>
+                  <p className="text-xs text-muted-foreground">Gestionar torneo, rondas y trofeos</p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+          <div className="h-6" />
+        </>
       )}
 
       {/* Logout */}

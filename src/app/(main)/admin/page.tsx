@@ -11,17 +11,21 @@ import { PageContainer } from '@/components/layout/page-container';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { 
   Loader2, Shield, Users, Trophy, Target, Settings, 
-  ChevronLeft, UserPlus, Award, Check
+  ChevronLeft, UserPlus, Award, Check, Plus
 } from 'lucide-react';
 import Link from 'next/link';
 import { SSS_TOURNAMENT_ID, TEAM_JORGE_ID, TEAM_YAGO_ID } from '@/lib/constants';
 import type { Challenge, Trophy as TrophyType, Profile, Match } from '@/types/database';
+import { PlayerAvatar } from '@/components/ui/player-avatar';
 
 export default function AdminPage() {
   const router = useRouter();
@@ -37,6 +41,7 @@ export default function AdminPage() {
   const [assignChallengeOpen, setAssignChallengeOpen] = useState(false);
   const [assignTrophyOpen, setAssignTrophyOpen] = useState(false);
   const [editMatchOpen, setEditMatchOpen] = useState<Match | null>(null);
+  const [createChallengeOpen, setCreateChallengeOpen] = useState(false);
   
   // Form state
   const [selectedChallenge, setSelectedChallenge] = useState('');
@@ -44,6 +49,15 @@ export default function AdminPage() {
   const [selectedTrophy, setSelectedTrophy] = useState('');
   const [selectedWinnerUser, setSelectedWinnerUser] = useState('');
   const [selectedWinnerTeam, setSelectedWinnerTeam] = useState('');
+  
+  // Create challenge form state
+  const [newChallenge, setNewChallenge] = useState({
+    title: '',
+    description: '',
+    challenge_type: 'individual' as 'individual' | 'pair' | 'team',
+    points_fun: 1,
+    penalty_text: '',
+  });
   
   const supabase = getSupabaseClient();
 
@@ -104,7 +118,10 @@ export default function AdminPage() {
       return;
     }
 
-    if (!selectedWinnerUser && !selectedWinnerTeam) {
+    const winnerUserId = selectedWinnerUser && selectedWinnerUser !== '__none__' ? selectedWinnerUser : null;
+    const winnerTeamId = selectedWinnerTeam && selectedWinnerTeam !== '__none__' ? selectedWinnerTeam : null;
+
+    if (!winnerUserId && !winnerTeamId) {
       toast.error('Selecciona un ganador');
       return;
     }
@@ -113,8 +130,8 @@ export default function AdminPage() {
     const { error } = await supabase
       .from('trophies')
       .update({
-        winner_user_id: selectedWinnerUser || null,
-        winner_team_id: selectedWinnerTeam || null,
+        winner_user_id: winnerUserId,
+        winner_team_id: winnerTeamId,
       } as Record<string, unknown>)
       .eq('id', selectedTrophy);
 
@@ -126,7 +143,7 @@ export default function AdminPage() {
       await supabase.from('events_feed').insert({
         tournament_id: SSS_TOURNAMENT_ID,
         event_type: 'trophy_awarded',
-        actor_user_id: selectedWinnerUser || null,
+        actor_user_id: winnerUserId,
         payload: { title: trophy?.title },
       } as Record<string, unknown>);
 
@@ -171,6 +188,42 @@ export default function AdminPage() {
       toast.error('Error al cambiar rol');
     } else {
       toast.success(`Rol cambiado a ${role}`);
+    }
+    setIsSaving(false);
+  };
+
+  const handleCreateChallenge = async () => {
+    if (!newChallenge.title.trim()) {
+      toast.error('El título es obligatorio');
+      return;
+    }
+
+    setIsSaving(true);
+    const { error } = await supabase
+      .from('challenges')
+      .insert({
+        tournament_id: SSS_TOURNAMENT_ID,
+        title: newChallenge.title.trim(),
+        description: newChallenge.description.trim() || null,
+        challenge_type: newChallenge.challenge_type,
+        points_fun: newChallenge.points_fun,
+        penalty_text: newChallenge.penalty_text.trim() || null,
+        is_active: true,
+      } as Record<string, unknown>);
+
+    if (error) {
+      toast.error('Error al crear reto', { description: error.message });
+    } else {
+      toast.success('Reto creado correctamente');
+      setCreateChallengeOpen(false);
+      setNewChallenge({
+        title: '',
+        description: '',
+        challenge_type: 'individual',
+        points_fun: 1,
+        penalty_text: '',
+      });
+      fetchData();
     }
     setIsSaving(false);
   };
@@ -235,14 +288,12 @@ export default function AdminPage() {
                   className="flex items-center justify-between p-3 rounded-lg bg-muted/30"
                 >
                   <div className="flex items-center gap-3">
-                    <div 
-                      className="w-10 h-10 rounded-full flex items-center justify-center text-lg"
-                      style={{ 
-                        backgroundColor: player.team_id === TEAM_JORGE_ID ? '#DC262620' : '#2563EB20'
-                      }}
-                    >
-                      {player.avatar_url || '👤'}
-                    </div>
+                    <PlayerAvatar
+                      avatarUrl={player.avatar_url}
+                      name={player.display_name}
+                      size="md"
+                      teamColor={player.team_id === TEAM_JORGE_ID ? '#DC2626' : '#2563EB'}
+                    />
                     <div>
                       <p className="font-medium">{player.display_name}</p>
                       <p className="text-xs text-muted-foreground">
@@ -324,13 +375,23 @@ export default function AdminPage() {
 
         {/* Challenges Tab */}
         <TabsContent value="challenges" className="mt-4 space-y-4">
-          <Button 
-            className="w-full"
-            onClick={() => setAssignChallengeOpen(true)}
-          >
-            <UserPlus className="w-4 h-4 mr-2" />
-            Asignar Reto
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              className="flex-1"
+              onClick={() => setCreateChallengeOpen(true)}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Crear Reto
+            </Button>
+            <Button 
+              className="flex-1"
+              variant="outline"
+              onClick={() => setAssignChallengeOpen(true)}
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              Asignar Reto
+            </Button>
+          </div>
 
           <Card>
             <CardHeader>
@@ -475,18 +536,18 @@ export default function AdminPage() {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Ganador (Jugador)</label>
-              <Select value={selectedWinnerUser} onValueChange={(v) => {
-                setSelectedWinnerUser(v);
+              <Select value={selectedWinnerUser || '__none__'} onValueChange={(v) => {
+                setSelectedWinnerUser(v === '__none__' ? '' : v);
                 setSelectedWinnerTeam('');
               }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecciona un jugador" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Ninguno</SelectItem>
+                  <SelectItem value="__none__">Ninguno</SelectItem>
                   {profiles.map((p) => (
                     <SelectItem key={p.id} value={p.id}>
-                      {p.nickname || p.display_name}
+                      {p.display_name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -494,15 +555,15 @@ export default function AdminPage() {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">O Ganador (Equipo)</label>
-              <Select value={selectedWinnerTeam} onValueChange={(v) => {
-                setSelectedWinnerTeam(v);
+              <Select value={selectedWinnerTeam || '__none__'} onValueChange={(v) => {
+                setSelectedWinnerTeam(v === '__none__' ? '' : v);
                 setSelectedWinnerUser('');
               }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecciona un equipo" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Ninguno</SelectItem>
+                  <SelectItem value="__none__">Ninguno</SelectItem>
                   {teams.map((t) => (
                     <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
                   ))}
@@ -536,6 +597,81 @@ export default function AdminPage() {
               isSaving={isSaving}
             />
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Challenge Dialog */}
+      <Dialog open={createChallengeOpen} onOpenChange={setCreateChallengeOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Crear Nuevo Reto</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="challenge-title">Título *</Label>
+              <Input
+                id="challenge-title"
+                value={newChallenge.title}
+                onChange={(e) => setNewChallenge(prev => ({ ...prev, title: e.target.value }))}
+                placeholder="Ej: El Predicador"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="challenge-description">Descripción</Label>
+              <Textarea
+                id="challenge-description"
+                value={newChallenge.description}
+                onChange={(e) => setNewChallenge(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Descripción del reto..."
+                rows={3}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="challenge-type">Tipo de Reto</Label>
+              <Select 
+                value={newChallenge.challenge_type} 
+                onValueChange={(v: 'individual' | 'pair' | 'team') => 
+                  setNewChallenge(prev => ({ ...prev, challenge_type: v }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="individual">Individual</SelectItem>
+                  <SelectItem value="pair">Pareja</SelectItem>
+                  <SelectItem value="team">Equipo</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="challenge-points">Puntos Fun</Label>
+              <Input
+                id="challenge-points"
+                type="number"
+                min="1"
+                value={newChallenge.points_fun}
+                onChange={(e) => setNewChallenge(prev => ({ ...prev, points_fun: parseInt(e.target.value) || 1 }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="challenge-penalty">Texto de Penalización</Label>
+              <Input
+                id="challenge-penalty"
+                value={newChallenge.penalty_text}
+                onChange={(e) => setNewChallenge(prev => ({ ...prev, penalty_text: e.target.value }))}
+                placeholder="Ej: Penalti: 1 chupito"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateChallengeOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleCreateChallenge} disabled={isSaving}>
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Crear Reto'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </PageContainer>
