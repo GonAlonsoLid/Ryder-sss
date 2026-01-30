@@ -125,7 +125,7 @@ export default function LeaderboardsPage() {
           </TabsTrigger>
           <TabsTrigger value="drinks">
             <Beer className="w-4 h-4 mr-1" />
-            Copas
+            Tragos
           </TabsTrigger>
           <TabsTrigger value="challenges">
             <Target className="w-4 h-4 mr-1" />
@@ -278,8 +278,8 @@ export default function LeaderboardsPage() {
                     <Beer className="w-5 h-5 text-amber-600" />
                   </div>
                   <div>
-                    <p className="font-semibold">Copas</p>
-                    <p className="text-xs text-muted-foreground">Puntos por copas consumidas</p>
+                    <p className="font-semibold">Tragos</p>
+                    <p className="text-xs text-muted-foreground">Puntos por tragos consumidos</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4 text-lg font-bold">
@@ -333,7 +333,7 @@ export default function LeaderboardsPage() {
           <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
             <CardContent className="py-4">
               <p className="text-sm text-center">
-                <span className="font-semibold">Todo suma.</span> Las copas y retos completados 
+                <span className="font-semibold">Todo suma.</span> Los tragos y retos completados 
                 añaden puntos al marcador de tu equipo.
               </p>
             </CardContent>
@@ -346,7 +346,7 @@ export default function LeaderboardsPage() {
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2" style={{ fontFamily: 'var(--font-display)' }}>
                 <Beer className="w-5 h-5 text-amber-600" />
-                Ranking de Copas
+                Ranking de Tragos
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -354,7 +354,7 @@ export default function LeaderboardsPage() {
                 <div className="text-center py-8">
                   <Beer className="w-12 h-12 mx-auto mb-4 text-amber-400" />
                   <p className="text-muted-foreground font-medium">
-                    Nadie ha registrado copas aún
+                    Nadie ha registrado tragos aún
                   </p>
                   <p className="text-sm text-muted-foreground mt-1">
                     El marcador espera
@@ -416,7 +416,7 @@ export default function LeaderboardsPage() {
                           <p className="text-3xl font-black" style={{ fontFamily: 'var(--font-display)' }}>
                             {stat.total}
                           </p>
-                          <p className="text-xs text-muted-foreground">copas</p>
+                          <p className="text-xs text-muted-foreground">tragos</p>
                         </div>
                       </div>
                     );
