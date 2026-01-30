@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { SSS_TOURNAMENT_ID, TEAM_JORGE_ID, TEAM_YAGO_ID } from '@/lib/constants';
-import type { Challenge, Trophy as TrophyType, Profile, Match } from '@/types/database';
+import type { Challenge, Trophy as TrophyType, Profile, Match, ChallengeAssignment } from '@/types/database';
 import { PlayerAvatar } from '@/components/ui/player-avatar';
 
 export default function AdminPage() {
@@ -33,6 +33,7 @@ export default function AdminPage() {
   const { teams, profiles, rounds } = useTournament();
   const [matches, setMatches] = useState<Match[]>([]);
   const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [assignments, setAssignments] = useState<ChallengeAssignment[]>([]);
   const [trophies, setTrophies] = useState<TrophyType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -62,14 +63,16 @@ export default function AdminPage() {
   const supabase = getSupabaseClient();
 
   const fetchData = useCallback(async () => {
-    const [matchesRes, challengesRes, trophiesRes] = await Promise.all([
+    const [matchesRes, challengesRes, assignmentsRes, trophiesRes] = await Promise.all([
       supabase.from('matches').select('*').order('created_at'),
       supabase.from('challenges').select('*').eq('tournament_id', SSS_TOURNAMENT_ID),
+      supabase.from('challenge_assignments').select('challenge_id, status'),
       supabase.from('trophies').select('*').eq('tournament_id', SSS_TOURNAMENT_ID),
     ]);
 
     if (matchesRes.data) setMatches(matchesRes.data as Match[]);
     if (challengesRes.data) setChallenges(challengesRes.data as Challenge[]);
+    if (assignmentsRes.data) setAssignments(assignmentsRes.data as ChallengeAssignment[]);
     if (trophiesRes.data) setTrophies(trophiesRes.data as TrophyType[]);
     
     setIsLoading(false);
@@ -86,9 +89,18 @@ export default function AdminPage() {
     }
   }, [authLoading, isAdmin, router, fetchData]);
 
+  const assignedChallengeIds = new Set(
+    assignments.filter(a => a.status === 'assigned').map(a => a.challenge_id)
+  );
+  const availableChallenges = challenges.filter(c => !assignedChallengeIds.has(c.id));
+
   const handleAssignChallenge = async () => {
     if (!selectedChallenge || !selectedUser) {
       toast.error('Selecciona reto y jugador');
+      return;
+    }
+    if (assignedChallengeIds.has(selectedChallenge)) {
+      toast.error('Este reto ya está asignado');
       return;
     }
 
@@ -108,6 +120,7 @@ export default function AdminPage() {
       setAssignChallengeOpen(false);
       setSelectedChallenge('');
       setSelectedUser('');
+      fetchData();
     }
     setIsSaving(false);
   };
@@ -477,7 +490,7 @@ export default function AdminPage() {
                   <SelectValue placeholder="Selecciona un reto" />
                 </SelectTrigger>
                 <SelectContent>
-                  {challenges.map((c) => (
+                  {availableChallenges.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.title}
                     </SelectItem>
