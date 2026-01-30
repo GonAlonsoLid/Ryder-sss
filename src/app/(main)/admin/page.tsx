@@ -410,11 +410,11 @@ export default function AdminPage() {
             <CardHeader>
               <CardTitle className="text-base">Biblioteca de Retos</CardTitle>
               <CardDescription>
-                {challenges.length} retos disponibles
+                {availableChallenges.length} retos sin asignar (de {challenges.length} en total)
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 max-h-[400px] overflow-y-auto">
-              {challenges.map((challenge) => (
+              {availableChallenges.map((challenge) => (
                 <div 
                   key={challenge.id}
                   className="p-3 rounded-lg bg-muted/30"
