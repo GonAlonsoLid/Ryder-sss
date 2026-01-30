@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Loader2, Beer, TrendingUp, Sparkles, Lock, Calendar } from 'lucide-react';
-import { SSS_TOURNAMENT_ID, DRINK_EMOJIS, DRINK_LABELS, timeAgo, DRINK_POINTS, TEAM_JORGE_ID } from '@/lib/constants';
+import { SSS_TOURNAMENT_ID, DRINK_EMOJIS, DRINK_LABELS, timeAgo, DRINK_POINTS, POINTS_PER_DRINK, TEAM_JORGE_ID } from '@/lib/constants';
 import type { Drink, Profile, DrinkType } from '@/types/database';
 
 const DRINK_TYPES: DrinkType[] = ['cerveza', 'chupito', 'copa', 'hidalgo'];
@@ -36,6 +36,7 @@ export default function DrinksPage() {
   const { profiles, isLoading: tournamentLoading } = useTournament();
   const { pimentonas, tabaqueras, isLoading: scoresLoading, refetch: refetchScores } = useTeamScores();
   const [myDrinks, setMyDrinks] = useState<Record<string, number>>({});
+  const [myPointsContributed, setMyPointsContributed] = useState<number>(0);
   const [recentDrinks, setRecentDrinks] = useState<DrinkWithProfile[]>([]);
   const [drinksLoading, setDrinksLoading] = useState(false);
   const [isSaving, setIsSaving] = useState<string | null>(null);
@@ -53,8 +54,9 @@ export default function DrinksPage() {
     setDrinksLoading(true);
 
     try {
-      // Fetch my drinks today
       const today = new Date().toISOString().split('T')[0];
+
+      // Fetch my drinks today (contador de hoy)
       const { data: myDrinksData } = await supabase
         .from('drinks')
         .select('drink_type, count')
@@ -68,6 +70,25 @@ export default function DrinksPage() {
           counts[d.drink_type] = (counts[d.drink_type] || 0) + d.count;
         });
         setMyDrinks(counts);
+      }
+
+      // Fetch all my drinks in tournament (para puntos aportados al equipo)
+      const { data: allMyDrinks } = await supabase
+        .from('drinks')
+        .select('drink_type, count')
+        .eq('user_id', player.id)
+        .eq('tournament_id', SSS_TOURNAMENT_ID);
+
+      if (allMyDrinks) {
+        const totalBreakdown: Record<string, number> = {};
+        (allMyDrinks as DrinkRow[]).forEach(d => {
+          totalBreakdown[d.drink_type] = (totalBreakdown[d.drink_type] || 0) + d.count;
+        });
+        const points = Object.entries(totalBreakdown).reduce(
+          (sum, [type, count]) => sum + count * (DRINK_POINTS[type] ?? POINTS_PER_DRINK),
+          0
+        );
+        setMyPointsContributed(points);
       }
 
       // Fetch recent drinks from everyone
@@ -178,11 +199,14 @@ export default function DrinksPage() {
                 <p className="text-xs text-muted-foreground">
                   {myTeamScore.totalDrinks} copas = <span className="font-bold">{myTeamScore.drinks.toFixed(1)} pts</span>
                 </p>
+                <p className="text-sm font-medium mt-1.5" style={{ color: myTeamColor }}>
+                  Has aportado <span className="font-bold">{myPointsContributed.toFixed(1)} pts</span> a tu equipo
+                </p>
               </div>
             </div>
             <div className="text-right text-xs text-muted-foreground">
               <p>🍺 +0.1 | 🥃 +0.2</p>
-              <p>🍸 +0.5 | 🫗 +0.7</p>
+              <p>🍸 +0.5 | 🫗 +0.8</p>
             </div>
           </div>
         </CardContent>

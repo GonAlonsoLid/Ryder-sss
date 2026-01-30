@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, Trophy, Beer, Target, Crown, Flag, Zap } from 'lucide-react';
-import { TEAM_JORGE_ID, SSS_TOURNAMENT_ID, DRINK_EMOJIS } from '@/lib/constants';
+import { TEAM_JORGE_ID, SSS_TOURNAMENT_ID, DRINK_EMOJIS, DRINK_POINTS, POINTS_PER_DRINK } from '@/lib/constants';
 import { PlayerAvatar } from '@/components/ui/player-avatar';
 import type { Profile } from '@/types/database';
 
@@ -100,6 +100,13 @@ export default function LeaderboardsPage() {
 
   const getProfile = (userId: string): Profile | undefined => {
     return profiles.find(p => p.id === userId);
+  };
+
+  const getDrinkPoints = (breakdown: Record<string, number>): number => {
+    return Object.entries(breakdown).reduce(
+      (sum, [type, count]) => sum + count * (DRINK_POINTS[type] ?? POINTS_PER_DRINK),
+      0
+    );
   };
 
   if (isLoading || tournamentLoading || scoresLoading) {
@@ -407,6 +414,9 @@ export default function LeaderboardsPage() {
                               </span>
                             ))}
                           </div>
+                          <p className="text-xs font-medium mt-1.5" style={{ color: isTeamJorge ? '#DC2626' : '#2563EB' }}>
+                            Aportado a su equipo: {getDrinkPoints(stat.breakdown).toFixed(1)} pts
+                          </p>
                         </div>
                         
                         {/* Score */}
