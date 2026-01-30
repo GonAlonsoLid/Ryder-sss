@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Activity, Beer, Target, Trophy, Flag } from 'lucide-react';
-import { SSS_TOURNAMENT_ID, DRINK_EMOJIS, timeAgo } from '@/lib/constants';
+import { SSS_TOURNAMENT_ID, TEAM_JORGE_ID, DRINK_EMOJIS, timeAgo } from '@/lib/constants';
 import type { EventFeed, Profile } from '@/types/database';
 
 interface EventWithActor extends EventFeed {
@@ -107,23 +107,10 @@ export function EventsFeed() {
     return acc;
   }, {} as Record<string, EventWithActor[]>);
 
-  const getEventBorderColor = (type: string) => {
-    switch (type) {
-      case 'score_update':
-      case 'match_started':
-      case 'match_completed':
-        return 'border-l-primary';
-      case 'drink':
-        return 'border-l-amber-500';
-      case 'challenge_completed':
-        return 'border-l-green-500';
-      case 'challenge_failed':
-        return 'border-l-red-500';
-      case 'trophy_awarded':
-        return 'border-l-yellow-500';
-      default:
-        return 'border-l-muted';
-    }
+  const getActorTeamColor = (event: EventWithActor): string | null => {
+    const teamId = event.actor?.team_id;
+    if (!teamId) return null;
+    return teamId === TEAM_JORGE_ID ? '#DC2626' : '#2563EB'; // Pimentonas rojo, Tabaqueras azul
   };
 
   return (
@@ -163,10 +150,13 @@ export function EventsFeed() {
                   
                   {/* Events in Group */}
                   <div className="space-y-2 ml-1">
-                    {groupEvents.map((event) => (
+                    {groupEvents.map((event) => {
+                      const teamColor = getActorTeamColor(event);
+                      return (
                       <div
                         key={event.id}
-                        className={`flex items-start gap-3 p-3 rounded-lg bg-muted/30 border-l-4 transition-all hover:bg-muted/50 animate-slide-up ${getEventBorderColor(event.event_type)}`}
+                        className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border-l-4 transition-all hover:bg-muted/50 animate-slide-up"
+                        style={{ borderLeftColor: teamColor ?? 'var(--muted)' }}
                       >
                         <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center flex-shrink-0">
                           {EVENT_ICONS[event.event_type] || <Activity className="w-5 h-5" />}
@@ -178,7 +168,7 @@ export function EventsFeed() {
                           </p>
                         </div>
                       </div>
-                    ))}
+                    ); })}
                   </div>
                 </div>
               ))}
