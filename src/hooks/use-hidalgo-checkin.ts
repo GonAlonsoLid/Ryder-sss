@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { getSupabaseClient } from '@/lib/supabase/client';
-import { SSS_TOURNAMENT_ID } from '@/lib/constants';
+import { SSS_TOURNAMENT_ID, HIDALGO_FOR_DATE_FIRST, HIDALGO_FOR_DATE_LAST } from '@/lib/constants';
 import type { HidalgoCheckin } from '@/types/database';
 
 const HIDALGO_PROMPT_HOUR = 10; // A partir de las 10:00 se muestra la pregunta
@@ -50,7 +50,9 @@ export function useHidalgoCheckin(userId: string | undefined) {
       }
 
       const alreadyAnswered = !!data;
-      const shouldShow = isMorningForPrompt() && !alreadyAnswered;
+      // Solo mañana y pasado: solo preguntamos si for_date está en el rango (no hoy)
+      const forDateInRange = forDate >= HIDALGO_FOR_DATE_FIRST && forDate <= HIDALGO_FOR_DATE_LAST;
+      const shouldShow = isMorningForPrompt() && !alreadyAnswered && forDateInRange;
       setShowPrompt(shouldShow);
     } catch {
       setShowPrompt(false);
@@ -92,9 +94,5 @@ export function useHidalgoCheckin(userId: string | undefined) {
     [userId, supabase]
   );
 
-  const dismiss = useCallback(() => {
-    setShowPrompt(false);
-  }, []);
-
-  return { showPrompt, loading, submitting, submit, dismiss, refetch: check };
+  return { showPrompt, loading, submitting, submit, refetch: check };
 }

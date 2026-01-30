@@ -11,6 +11,8 @@ import {
   POINTS_PER_DRINK,
   DRINK_POINTS,
   POINTS_PER_CHALLENGE_DEFAULT,
+  HIDALGO_FOR_DATE_FIRST,
+  HIDALGO_FOR_DATE_LAST,
 } from '@/lib/constants';
 import type { Match, Drink, ChallengeAssignment, Profile, Challenge, HidalgoCheckin } from '@/types/database';
 
@@ -267,6 +269,10 @@ function isPastValidationDeadline(forDateStr: string): boolean {
   return today > deadline;
 }
 
+function isHidalgoDateActive(forDateStr: string): boolean {
+  return forDateStr >= HIDALGO_FOR_DATE_FIRST && forDateStr <= HIDALGO_FOR_DATE_LAST;
+}
+
 function calculateHidalgoPenalty(
   checkins: HidalgoCheckin[],
   profiles: Profile[],
@@ -275,11 +281,13 @@ function calculateHidalgoPenalty(
   const teamUserIds = new Set(profiles.filter(p => p.team_id === teamId).map(p => p.id));
   let penalty = 0;
   for (const c of checkins) {
-    if (!c.said_yes) continue;
     if (!teamUserIds.has(c.user_id)) continue;
-    if (c.validated_by_same_team_id && c.validated_by_opposite_team_id) continue;
+    if (!isHidalgoDateActive(c.for_date)) continue; // solo mañana y pasado
     if (!isPastValidationDeadline(c.for_date)) continue;
-    penalty += HIDALGO_PENALTY;
+    // Resta 1: si dijo No, o si dijo Sí pero no está validado por ambos
+    const unvalidated = c.said_yes && (!c.validated_by_same_team_id || !c.validated_by_opposite_team_id);
+    const saidNo = !c.said_yes;
+    if (saidNo || unvalidated) penalty += HIDALGO_PENALTY;
   }
   return penalty;
 }

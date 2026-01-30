@@ -6,7 +6,7 @@ import { HidalgoMorningModal } from './hidalgo-morning-modal';
 
 export function HidalgoMorningProvider({ children }: { children: React.ReactNode }) {
   const { player } = useSimpleAuth();
-  const { showPrompt, submitting, submit, dismiss } = useHidalgoCheckin(player?.id);
+  const { showPrompt, submitting, submit } = useHidalgoCheckin(player?.id);
 
   return (
     <>
@@ -15,7 +15,6 @@ export function HidalgoMorningProvider({ children }: { children: React.ReactNode
         open={showPrompt}
         onYes={() => submit(true)}
         onNo={() => submit(false)}
-        onClose={dismiss}
         loading={submitting}
       />
     </>

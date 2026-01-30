@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Loader2, CheckCircle, Users } from 'lucide-react';
-import { SSS_TOURNAMENT_ID, DRINK_EMOJIS } from '@/lib/constants';
+import { SSS_TOURNAMENT_ID, DRINK_EMOJIS, HIDALGO_FOR_DATE_FIRST, HIDALGO_FOR_DATE_LAST } from '@/lib/constants';
 import type { HidalgoCheckin } from '@/types/database';
 import type { Profile } from '@/types/database';
 
@@ -30,6 +30,10 @@ function isWithinValidationDeadline(forDateStr: string): boolean {
   deadline.setUTCDate(deadline.getUTCDate() + 1);
   const today = new Date(todayDateStr() + 'T12:00:00Z');
   return today <= deadline;
+}
+
+function isHidalgoDateActive(forDateStr: string): boolean {
+  return forDateStr >= HIDALGO_FOR_DATE_FIRST && forDateStr <= HIDALGO_FOR_DATE_LAST;
 }
 
 export default function HidalgoPage() {
@@ -60,6 +64,7 @@ export default function HidalgoPage() {
 
       const pending = withProfiles.filter(
         (c) =>
+          isHidalgoDateActive(c.for_date) &&
           isWithinValidationDeadline(c.for_date) &&
           (c.validated_by_same_team_id == null || c.validated_by_opposite_team_id == null)
       );

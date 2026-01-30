@@ -5,6 +5,10 @@ export const SSS_TOURNAMENT_ID = '00000000-0000-0000-0000-000000000001';
 export const TEAM_JORGE_ID = '00000000-0000-0000-0000-000000000010';
 export const TEAM_YAGO_ID = '00000000-0000-0000-0000-000000000011';
 
+// Hidalgo matutino: solo aplica mañana y pasado (no hoy). for_date = noche anterior.
+export const HIDALGO_FOR_DATE_FIRST = '2026-01-30'; // mañana: preguntamos por la noche del 29→30
+export const HIDALGO_FOR_DATE_LAST = '2026-01-31';  // pasado: preguntamos por la noche del 30→31
+
 // Player names (for reference)
 export const TEAM_JORGE_PLAYERS = ['Jorge', 'Miguel', 'Pedro', 'Sebas', 'Felipe'];
 export const TEAM_YAGO_PLAYERS = ['Yago', 'Marcos', 'Enrique', 'Semmler', 'Gonzi'];
