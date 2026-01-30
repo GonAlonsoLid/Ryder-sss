@@ -13,17 +13,26 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { Loader2, User, LogOut, Shield, Save, Lock, Camera, Upload } from 'lucide-react';
+import { Loader2, User, LogOut, Shield, Save, Lock, Camera, Upload, Target } from 'lucide-react';
 import { getSupabaseClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { TEAM_JORGE_ID } from '@/lib/constants';
 import { PlayerAvatar } from '@/components/ui/player-avatar';
+import { useTournament } from '@/hooks/use-tournament';
+import type { ChallengeAssignment, Challenge } from '@/types/database';
+
+interface AssignmentWithChallenge extends ChallengeAssignment {
+  challenge?: Challenge | null;
+}
 
 export default function SettingsPage() {
   const router = useRouter();
   const { player, isAdmin, isLoading: authLoading, logout, updateProfile, isAuthenticated } = useSimpleAuth();
+  const { profiles, isLoading: tournamentLoading } = useTournament();
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [teamAssignments, setTeamAssignments] = useState<AssignmentWithChallenge[]>([]);
+  const [assignmentsLoading, setAssignmentsLoading] = useState(false);
   const [formData, setFormData] = useState({
     nickname: '',
     avatar_url: '',
@@ -47,6 +56,51 @@ export default function SettingsPage() {
       });
     }
   }, [player]);
+
+  // Para admins: cargar retos asignados a jugadores de su equipo
+  useEffect(() => {
+    if (!isAdmin || !player?.team_id || tournamentLoading) return;
+
+    const fetchTeamAssignments = async () => {
+      setAssignmentsLoading(true);
+      try {
+        const teamMemberIds = new Set(
+          profiles.filter(p => p.team_id === player.team_id).map(p => p.id)
+        );
+        if (teamMemberIds.size === 0) {
+          setTeamAssignments([]);
+          setAssignmentsLoading(false);
+          return;
+        }
+
+        const { data: assignmentsData } = await supabase
+          .from('challenge_assignments')
+          .select('*')
+          .eq('status', 'assigned');
+
+        const { data: challengesData } = await supabase
+          .from('challenges')
+          .select('id, title');
+
+        const challengesMap = new Map((challengesData || []).map((c: { id: string; title: string }) => [c.id, c]));
+        const assignments = (assignmentsData || []).filter(
+          (a: ChallengeAssignment) => a.assigned_to_user_id && teamMemberIds.has(a.assigned_to_user_id)
+        ).map((a: ChallengeAssignment) => ({
+          ...a,
+          challenge: challengesMap.get(a.challenge_id) || null,
+        })) as AssignmentWithChallenge[];
+
+        setTeamAssignments(assignments);
+      } catch (e) {
+        console.error(e);
+        setTeamAssignments([]);
+      } finally {
+        setAssignmentsLoading(false);
+      }
+    };
+
+    fetchTeamAssignments();
+  }, [isAdmin, player?.team_id, profiles, tournamentLoading, supabase]);
 
   // Handle file upload
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -334,9 +388,59 @@ export default function SettingsPage() {
 
       <Separator />
 
-      {/* Admin Link */}
+      {/* Admin: retos asignados en tu equipo */}
       {isAdmin && (
         <>
+          <Card className="border-amber-500/20 bg-amber-500/5">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Target className="w-4 h-4 text-amber-500" />
+                Retos asignados en {teamName}
+              </CardTitle>
+              <CardDescription>
+                Quién de tu equipo tiene reto activo
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {assignmentsLoading ? (
+                <div className="flex justify-center py-4">
+                  <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : teamAssignments.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-2">
+                  Nadie de tu equipo tiene un reto asignado ahora mismo
+                </p>
+              ) : (
+                <ul className="space-y-2">
+                  {teamAssignments.map((a) => {
+                    const profile = profiles.find(p => p.id === a.assigned_to_user_id);
+                    const name = profile?.nickname || profile?.display_name || '?';
+                    return (
+                      <li
+                        key={a.id}
+                        className="flex items-center gap-3 p-3 rounded-lg bg-muted/30"
+                      >
+                        <PlayerAvatar
+                          avatarUrl={profile?.avatar_url}
+                          name={name}
+                          size="sm"
+                          teamColor={teamColor}
+                          className="shrink-0"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium truncate">{name}</p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            Reto: {a.challenge?.title ?? '—'}
+                          </p>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+
           <Link href="/admin">
             <Card className="hover:bg-muted/50 transition-colors cursor-pointer border-amber-500/30 bg-amber-500/5">
               <CardContent className="flex items-center gap-3 py-4">
