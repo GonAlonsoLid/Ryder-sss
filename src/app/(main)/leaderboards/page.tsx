@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, Trophy, Beer, Target, Crown, Flag, Zap } from 'lucide-react';
 import { TEAM_JORGE_ID, SSS_TOURNAMENT_ID, DRINK_EMOJIS } from '@/lib/constants';
+import { PlayerAvatar } from '@/components/ui/player-avatar';
 import type { Profile } from '@/types/database';
 
 interface DrinkStats {
@@ -387,17 +388,14 @@ export default function LeaderboardsPage() {
                           {medal || index + 1}
                         </div>
                         
-                        {/* Avatar */}
-                        <div 
-                          className="w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold shadow-sm"
-                          style={{ 
-                            backgroundColor: isTeamJorge ? '#EF444420' : '#3B82F620',
-                            border: `2px solid ${isTeamJorge ? '#EF4444' : '#3B82F6'}`,
-                            color: isTeamJorge ? '#EF4444' : '#3B82F6'
-                          }}
-                        >
-                          {profile?.nickname?.charAt(0) || profile?.display_name?.charAt(0) || '?'}
-                        </div>
+                        {/* Avatar: foto con contorno del equipo, o inicial si no hay foto */}
+                        <PlayerAvatar
+                          avatarUrl={profile?.avatar_url}
+                          name={profile?.nickname || profile?.display_name || '?'}
+                          size="md"
+                          teamColor={isTeamJorge ? '#DC2626' : '#2563EB'}
+                          className="shrink-0 shadow-sm"
+                        />
                         
                         {/* Info */}
                         <div className="flex-1 min-w-0">
@@ -474,17 +472,14 @@ export default function LeaderboardsPage() {
                           {medal || index + 1}
                         </div>
                         
-                        {/* Avatar */}
-                        <div 
-                          className="w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold shadow-sm"
-                          style={{ 
-                            backgroundColor: isTeamJorge ? '#EF444420' : '#3B82F620',
-                            border: `2px solid ${isTeamJorge ? '#EF4444' : '#3B82F6'}`,
-                            color: isTeamJorge ? '#EF4444' : '#3B82F6'
-                          }}
-                        >
-                          {profile?.nickname?.charAt(0) || profile?.display_name?.charAt(0) || '?'}
-                        </div>
+                        {/* Avatar: foto con contorno del equipo, o inicial si no hay foto */}
+                        <PlayerAvatar
+                          avatarUrl={profile?.avatar_url}
+                          name={profile?.nickname || profile?.display_name || '?'}
+                          size="md"
+                          teamColor={isTeamJorge ? '#DC2626' : '#2563EB'}
+                          className="shrink-0 shadow-sm"
+                        />
                         
                         {/* Info */}
                         <div className="flex-1 min-w-0">

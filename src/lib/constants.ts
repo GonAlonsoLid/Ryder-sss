@@ -29,7 +29,7 @@ export const DRINK_POINTS: Record<string, number> = {
   cerveza: 0.1,
   chupito: 0.2,
   copa: 0.5,
-  hidalgo: 0.7,
+  hidalgo: 0.8,
 };
 export const POINTS_PER_CHALLENGE_DEFAULT = 0.5;
 

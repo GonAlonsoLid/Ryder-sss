@@ -34,14 +34,14 @@ export function PlayerAvatar({
     className
   );
 
-  // Si es URL de imagen
+  // Si es URL de imagen: foto con contorno del color del equipo
   if (isImageUrl && avatarUrl) {
     return (
       <div 
         className={baseClasses}
         style={{ 
           backgroundColor: `${teamColor}15`,
-          border: `2px solid ${teamColor}40`
+          border: `2px solid ${teamColor}`
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
