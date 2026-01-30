@@ -64,7 +64,13 @@ export default function LeaderboardsPage() {
         stat.total += d.count;
         stat.breakdown[d.drink_type] = (stat.breakdown[d.drink_type] || 0) + d.count;
       });
-      setDrinkStats(Array.from(statsMap.values()).sort((a, b) => b.total - a.total));
+      setDrinkStats(Array.from(statsMap.values()).sort((a, b) => {
+        const pts = (s: DrinkStats) => Object.entries(s.breakdown).reduce(
+          (sum, [type, count]) => sum + count * (DRINK_POINTS[type] ?? POINTS_PER_DRINK),
+          0
+        );
+        return pts(b) - pts(a);
+      }));
     }
 
     // Fetch challenge stats
@@ -415,16 +421,16 @@ export default function LeaderboardsPage() {
                             ))}
                           </div>
                           <p className="text-xs font-medium mt-1.5" style={{ color: isTeamJorge ? '#DC2626' : '#2563EB' }}>
-                            Aportado a su equipo: {getDrinkPoints(stat.breakdown).toFixed(1)} pts
+                            {stat.total} tragos
                           </p>
                         </div>
                         
-                        {/* Score */}
+                        {/* Puntos aportados (ranking por esto) */}
                         <div className="text-right">
                           <p className="text-3xl font-black" style={{ fontFamily: 'var(--font-display)' }}>
-                            {stat.total}
+                            {getDrinkPoints(stat.breakdown).toFixed(1)}
                           </p>
-                          <p className="text-xs text-muted-foreground">tragos</p>
+                          <p className="text-xs text-muted-foreground">pts</p>
                         </div>
                       </div>
                     );
