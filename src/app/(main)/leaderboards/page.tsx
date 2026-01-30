@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, Trophy, Beer, Target, Crown, Flag, Zap } from 'lucide-react';
-import { TEAM_JORGE_ID, SSS_TOURNAMENT_ID, DRINK_EMOJIS, POINTS_PER_DRINK } from '@/lib/constants';
+import { TEAM_JORGE_ID, SSS_TOURNAMENT_ID, DRINK_EMOJIS } from '@/lib/constants';
 import type { Profile } from '@/types/database';
 
 interface DrinkStats {
@@ -279,7 +279,7 @@ export default function LeaderboardsPage() {
                   </div>
                   <div>
                     <p className="font-semibold">Copas</p>
-                    <p className="text-xs text-muted-foreground">{POINTS_PER_DRINK} pto/copa • {pimentonas.totalDrinks} vs {tabaqueras.totalDrinks}</p>
+                    <p className="text-xs text-muted-foreground">Puntos por copas consumidas</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4 text-lg font-bold">

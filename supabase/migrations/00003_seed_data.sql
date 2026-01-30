@@ -47,7 +47,10 @@ VALUES
     ('00000000-0000-0000-0000-000000000001', 'El Meteorólogo', 'Antes de cada golpe, dar el parte meteorológico detallado', 'individual', 3, 'Penalti: 1 cerveza', true),
     ('00000000-0000-0000-0000-000000000001', 'El Comentarista', 'Narrar tus propios golpes como comentarista de TV', 'individual', 2, 'Penalti: 1 chupito', true),
     ('00000000-0000-0000-0000-000000000001', 'Zurdo Forzoso', 'Jugar un hoyo con la mano contraria', 'individual', 5, 'Penalti: 2 chupitos', true),
-    ('00000000-0000-0000-0000-000000000001', 'El Fotógrafo', 'Hacer pose de campeón tras cada golpe bueno (mínimo 3)', 'individual', 2, 'Penalti: 1 cerveza', true);
+    ('00000000-0000-0000-0000-000000000001', 'El Fotógrafo', 'Hacer pose de campeón tras cada golpe bueno (mínimo 3)', 'individual', 2, 'Penalti: 1 cerveza', true),
+    ('00000000-0000-0000-0000-000000000001', 'Reversaso v1', 'Reversaso versión 1. 1 punto por reversaso.', 'individual', 1, NULL, true),
+    ('00000000-0000-0000-0000-000000000001', 'Reversaso v2', 'Reversaso versión 2. 1 punto por reversaso.', 'individual', 1, NULL, true),
+    ('00000000-0000-0000-0000-000000000001', 'Reversaso v3', 'Reversaso versión 3. 1 punto por reversaso.', 'individual', 1, NULL, true);
 
 -- ================================
 -- TROPHIES (Plantillas)
