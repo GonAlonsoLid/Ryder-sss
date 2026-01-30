@@ -36,7 +36,7 @@ interface AssignmentRow {
 }
 
 export default function ChallengesPage() {
-  const { player, isLoading: authLoading } = useSimpleAuth();
+  const { player, isAdmin, isLoading: authLoading } = useSimpleAuth();
   const { profiles, isLoading: tournamentLoading } = useTournament();
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [myAssignments, setMyAssignments] = useState<AssignmentWithDetails[]>([]);
@@ -93,6 +93,10 @@ export default function ChallengesPage() {
   const isLoading = authLoading || tournamentLoading;
 
   const handleValidate = async (assignmentId: string, success: boolean) => {
+    if (!isAdmin) {
+      toast.error('Solo los administradores pueden validar retos');
+      return;
+    }
     setValidatingId(assignmentId);
     const assignment = allAssignments.find(a => a.id === assignmentId);
     
@@ -162,9 +166,9 @@ export default function ChallengesPage() {
       </div>
 
       <Tabs defaultValue="mine">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className={isAdmin ? 'grid w-full grid-cols-3' : 'grid w-full grid-cols-2'}>
           <TabsTrigger value="mine">Mis Retos</TabsTrigger>
-          <TabsTrigger value="validate">Validar</TabsTrigger>
+          {isAdmin && <TabsTrigger value="validate">Validar</TabsTrigger>}
           <TabsTrigger value="catalog">Catálogo</TabsTrigger>
         </TabsList>
 
@@ -226,12 +230,13 @@ export default function ChallengesPage() {
           )}
         </TabsContent>
 
-        {/* Validate Others */}
+        {/* Validate Others - solo admins */}
+        {isAdmin && (
         <TabsContent value="validate" className="mt-4 space-y-3">
           <Card className="bg-muted/30">
             <CardContent className="py-3">
               <p className="text-sm text-muted-foreground text-center">
-                🎯 Sé testigo de los retos de tus colegas
+                🎯 Como admin, puedes validar los retos asignados
               </p>
             </CardContent>
           </Card>
@@ -294,6 +299,7 @@ export default function ChallengesPage() {
             </Card>
           )}
         </TabsContent>
+        )}
 
         {/* Challenge Catalog */}
         <TabsContent value="catalog" className="mt-4 space-y-3">
