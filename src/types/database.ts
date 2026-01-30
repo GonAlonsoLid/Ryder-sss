@@ -152,6 +152,18 @@ export interface EventFeed {
   created_at: string;
 }
 
+export interface HidalgoCheckin {
+  id: string;
+  user_id: string;
+  tournament_id: string;
+  for_date: string;
+  said_yes: boolean;
+  validated_by_same_team_id: string | null;
+  validated_by_opposite_team_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 // Extended types with relations
 export interface MatchWithDetails extends Match {
   round?: Round;
@@ -254,6 +266,11 @@ export interface Database {
         Row: EventFeed;
         Insert: Omit<EventFeed, 'id' | 'created_at'>;
         Update: never;
+      };
+      hidalgo_checkins: {
+        Row: HidalgoCheckin;
+        Insert: Omit<HidalgoCheckin, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<HidalgoCheckin, 'id' | 'user_id' | 'tournament_id' | 'for_date' | 'created_at'>>;
       };
     };
     Enums: {

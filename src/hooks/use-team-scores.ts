@@ -12,7 +12,10 @@ import {
   DRINK_POINTS,
   POINTS_PER_CHALLENGE_DEFAULT,
 } from '@/lib/constants';
-import type { Match, Drink, ChallengeAssignment, Profile, Challenge } from '@/types/database';
+import type { Match, Drink, ChallengeAssignment, Profile, Challenge, HidalgoCheckin } from '@/types/database';
+
+const HIDALGO_PENALTY = 1;
+const HIDALGO_VALIDATION_DEADLINE_DAYS = 1; // Tienen hasta el día siguiente a for_date para validar
 
 export interface TeamScoreBreakdown {
   teamId: string;
@@ -20,6 +23,7 @@ export interface TeamScoreBreakdown {
   golf: number;
   drinks: number;
   challenges: number;
+  hidalgoPenalty: number;
   total: number;
   // Detalles
   matchesWon: number;
@@ -48,12 +52,13 @@ export function useTeamScores() {
   const fetchScores = useCallback(async () => {
     try {
       // Fetch all data in parallel
-      const [matchesRes, drinksRes, challengesRes, assignmentsRes, profilesRes] = await Promise.all([
+      const [matchesRes, drinksRes, challengesRes, assignmentsRes, profilesRes, hidalgoRes] = await Promise.all([
         supabase.from('matches').select('*'),
         supabase.from('drinks').select('*').eq('tournament_id', SSS_TOURNAMENT_ID),
         supabase.from('challenges').select('*').eq('tournament_id', SSS_TOURNAMENT_ID),
         supabase.from('challenge_assignments').select('*').eq('status', 'completed'),
         supabase.from('profiles').select('*'),
+        supabase.from('hidalgo_checkins').select('*').eq('tournament_id', SSS_TOURNAMENT_ID),
       ]);
 
       const matches = (matchesRes.data || []) as Match[];
@@ -61,6 +66,7 @@ export function useTeamScores() {
       const challenges = (challengesRes.data || []) as Challenge[];
       const assignments = (assignmentsRes.data || []) as ChallengeAssignment[];
       const profiles = (profilesRes.data || []) as Profile[];
+      const hidalgoCheckins = (hidalgoRes.data || []) as HidalgoCheckin[];
 
       // Calculate Golf Points
       const golfJorge = calculateGolfPoints(matches, TEAM_JORGE_ID);
@@ -74,6 +80,13 @@ export function useTeamScores() {
       const challengesJorge = calculateChallengePoints(assignments, challenges, profiles, TEAM_JORGE_ID);
       const challengesYago = calculateChallengePoints(assignments, challenges, profiles, TEAM_YAGO_ID);
 
+      // Hidalgo penalty: -1 por check-in "said_yes" no validado (falta mismo equipo o contrario)
+      const hidalgoPenaltyJorge = calculateHidalgoPenalty(hidalgoCheckins, profiles, TEAM_JORGE_ID);
+      const hidalgoPenaltyYago = calculateHidalgoPenalty(hidalgoCheckins, profiles, TEAM_YAGO_ID);
+
+      const totalJorge = golfJorge.points + drinksJorge.points + challengesJorge.points - hidalgoPenaltyJorge;
+      const totalYago = golfYago.points + drinksYago.points + challengesYago.points - hidalgoPenaltyYago;
+
       setData({
         pimentonas: {
           teamId: TEAM_JORGE_ID,
@@ -81,7 +94,8 @@ export function useTeamScores() {
           golf: golfJorge.points,
           drinks: drinksJorge.points,
           challenges: challengesJorge.points,
-          total: golfJorge.points + drinksJorge.points + challengesJorge.points,
+          hidalgoPenalty: hidalgoPenaltyJorge,
+          total: totalJorge,
           matchesWon: golfJorge.won,
           matchesDrawn: golfJorge.drawn,
           totalDrinks: drinksJorge.count,
@@ -93,7 +107,8 @@ export function useTeamScores() {
           golf: golfYago.points,
           drinks: drinksYago.points,
           challenges: challengesYago.points,
-          total: golfYago.points + drinksYago.points + challengesYago.points,
+          hidalgoPenalty: hidalgoPenaltyYago,
+          total: totalYago,
           matchesWon: golfYago.won,
           matchesDrawn: golfYago.drawn,
           totalDrinks: drinksYago.count,
@@ -130,10 +145,16 @@ export function useTeamScores() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'challenge_assignments' }, fetchScores)
       .subscribe();
 
+    const hidalgoSubscription = supabase
+      .channel('hidalgo-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'hidalgo_checkins' }, fetchScores)
+      .subscribe();
+
     return () => {
       matchesSubscription.unsubscribe();
       drinksSubscription.unsubscribe();
       challengesSubscription.unsubscribe();
+      hidalgoSubscription.unsubscribe();
     };
   }, [supabase, fetchScores]);
 
@@ -148,6 +169,7 @@ function createEmptyBreakdown(teamId: string, teamName: string): TeamScoreBreakd
     golf: 0,
     drinks: 0,
     challenges: 0,
+    hidalgoPenalty: 0,
     total: 0,
     matchesWon: 0,
     matchesDrawn: 0,
@@ -229,5 +251,36 @@ function calculateChallengePoints(
   }
 
   return { points, count };
+}
+
+/** Fecha de hoy en YYYY-MM-DD (solo fecha, sin hora) */
+function todayDateStr(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+/** Si el check-in ya pasó el plazo de validación (día siguiente a for_date) */
+function isPastValidationDeadline(forDateStr: string): boolean {
+  const forDate = new Date(forDateStr + 'T12:00:00Z');
+  const deadline = new Date(forDate);
+  deadline.setUTCDate(deadline.getUTCDate() + HIDALGO_VALIDATION_DEADLINE_DAYS);
+  const today = new Date(todayDateStr() + 'T12:00:00Z');
+  return today > deadline;
+}
+
+function calculateHidalgoPenalty(
+  checkins: HidalgoCheckin[],
+  profiles: Profile[],
+  teamId: string
+): number {
+  const teamUserIds = new Set(profiles.filter(p => p.team_id === teamId).map(p => p.id));
+  let penalty = 0;
+  for (const c of checkins) {
+    if (!c.said_yes) continue;
+    if (!teamUserIds.has(c.user_id)) continue;
+    if (c.validated_by_same_team_id && c.validated_by_opposite_team_id) continue;
+    if (!isPastValidationDeadline(c.for_date)) continue;
+    penalty += HIDALGO_PENALTY;
+  }
+  return penalty;
 }
 

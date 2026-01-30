@@ -306,6 +306,26 @@ export default function LeaderboardsPage() {
                   <span style={{ color: '#2563EB' }}>{tabaqueras.challenges.toFixed(1)}</span>
                 </div>
               </div>
+
+              {/* Hidalgo (penalización si no validado) */}
+              {(pimentonas.hidalgoPenalty > 0 || tabaqueras.hidalgoPenalty > 0) && (
+                <div className="flex items-center justify-between p-3 rounded-xl bg-amber-500/5 border border-amber-500/20">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center text-lg">
+                      {DRINK_EMOJIS.hidalgo ?? '🫗'}
+                    </div>
+                    <div>
+                      <p className="font-semibold">Hidalgo (sin validar)</p>
+                      <p className="text-xs text-muted-foreground">−1 pto por hidalgo no validado a tiempo</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 text-lg font-bold">
+                    <span style={{ color: '#DC2626' }}>−{pimentonas.hidalgoPenalty}</span>
+                    <span className="text-muted-foreground text-sm">-</span>
+                    <span style={{ color: '#2563EB' }}>−{tabaqueras.hidalgoPenalty}</span>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 

@@ -16,7 +16,7 @@ import {
   Loader2, Flag, Zap 
 } from 'lucide-react';
 import Link from 'next/link';
-import { TEAM_JORGE_ID, ROUND_FORMAT_LABELS } from '@/lib/constants';
+import { TEAM_JORGE_ID, ROUND_FORMAT_LABELS, DRINK_EMOJIS } from '@/lib/constants';
 import { EventsFeed } from '@/components/features/events-feed';
 
 export default function DashboardPage() {
@@ -206,6 +206,15 @@ export default function DashboardPage() {
               <Target className="w-8 h-8 text-green-500 mb-2" />
               <p className="font-medium text-sm">Mis Retos</p>
               <p className="text-xs text-muted-foreground">Desafíos activos</p>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/hidalgo">
+          <Card className="hover:bg-muted/50 transition-colors cursor-pointer h-full">
+            <CardContent className="p-4 flex flex-col items-center text-center">
+              <span className="text-2xl mb-2">{DRINK_EMOJIS.hidalgo ?? '🫗'}</span>
+              <p className="font-medium text-sm">Validar Hidalgo</p>
+              <p className="text-xs text-muted-foreground">Validar hidalgos del otro equipo</p>
             </CardContent>
           </Card>
         </Link>

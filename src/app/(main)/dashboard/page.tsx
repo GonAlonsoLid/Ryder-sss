@@ -17,7 +17,7 @@ import {
   Loader2, Flag, Zap 
 } from 'lucide-react';
 import Link from 'next/link';
-import { TEAM_JORGE_ID, ROUND_FORMAT_LABELS } from '@/lib/constants';
+import { TEAM_JORGE_ID, ROUND_FORMAT_LABELS, DRINK_EMOJIS } from '@/lib/constants';
 import { EventsFeed } from '@/components/features/events-feed';
 import { ScoreCard } from '@/components/ui/score-card';
 import { MatchCard } from '@/components/ui/match-card';
@@ -389,6 +389,17 @@ export default function DashboardPage() {
               <p className="text-xs text-muted-foreground">
                 {pimentonas.challengesCompleted + tabaqueras.challengesCompleted} completados
               </p>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/hidalgo">
+          <Card className="hover:bg-muted/50 transition-colors cursor-pointer h-full border-2 border-transparent hover:border-amber-500/20">
+            <CardContent className="p-4 flex flex-col items-center text-center">
+              <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center mb-2 text-xl">
+                {DRINK_EMOJIS.hidalgo ?? '🫗'}
+              </div>
+              <p className="font-semibold text-sm">Validar Hidalgo</p>
+              <p className="text-xs text-muted-foreground">Validar hidalgos anoche</p>
             </CardContent>
           </Card>
         </Link>
