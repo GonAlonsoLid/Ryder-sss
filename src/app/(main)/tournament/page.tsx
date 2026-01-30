@@ -72,8 +72,8 @@ export default function TournamentPage() {
     const updatePhase = () => {
       const now = new Date();
       
-      // Fechas exactas del torneo - 31 enero y 1 febrero 2026
-      const saturdayStart = new Date('2026-01-31T00:00:00');
+      // Fechas exactas del torneo - 31 enero (desbloqueo 10:45) y 1 febrero 2026
+      const saturdayStart = new Date('2026-01-31T10:45:00');
       const saturdayEnd = new Date('2026-01-31T23:59:59');
       const sundayStart = new Date('2026-02-01T00:00:00');
       const sundayEnd = new Date('2026-02-01T23:59:59');
@@ -91,9 +91,9 @@ export default function TournamentPage() {
         setPhase('finished');
         setTimeLeft(null);
       } else {
-        // Todavía no ha empezado - mostrar countdown
+        // Todavía no ha empezado - mostrar countdown hasta 31 enero 10:45
         setPhase('before');
-        const target = new Date('2026-01-31T09:00:00');
+        const target = new Date('2026-01-31T10:45:00');
         const difference = target.getTime() - now.getTime();
         
         if (difference > 0) {
